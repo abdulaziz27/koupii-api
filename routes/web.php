@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -32,3 +33,5 @@ Route::get('/', function () {
 Route::get('/api/test', function (Request $request) {
     return response()->json(['message' => 'API is working!']);
 });
+
+Route::get('/api/sanctum/csrf-cookie', [AuthController::class, 'sanctum']);

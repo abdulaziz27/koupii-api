@@ -15,7 +15,7 @@ use Illuminate\Http\Request;
  * )
  *
  * @OA\Server(
- *     url="http://localhost:8000",
+ *     url="http://127.0.0.1:8000",
  *     description="Local server"
  * )
  */
@@ -40,4 +40,4 @@ class SwaggerTestController extends Controller
     {
         return response()->json(['message' => 'API is working!']);
     }
-} 
+}

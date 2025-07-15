@@ -48,4 +48,45 @@ class ValidationHelper
             ],
         );
     }
+
+    public static function vocabularyCategory($data)
+    {
+        return Validator::make(
+            $data,
+            [
+                'name' => 'required|string|max:255',
+                'color_code' => 'nullable|string|max:20',
+            ],
+            [
+                'name.required' => 'Category name is required',
+                'name.string' => 'Category name must be a string',
+                'color_code.string' => 'Color code must be a string',
+            ],
+        );
+    }
+
+    public static function vocabulary($data)
+    {
+        return Validator::make(
+            $data,
+            [
+                // 'teacher_id' => 'required|exists:users,id',
+                'category_id' => 'required|exists:vocabulary_categories,id',
+                'word' => 'required|string|max:255',
+                'translation' => 'required|string|max:255',
+                'spelling' => 'nullable|string|max:255',
+                'explanation' => 'nullable|string',
+                'audio_file_path' => 'nullable|string|max:255',
+                'is_public' => 'boolean',
+            ],
+            [
+                // 'teacher_id.required' => 'Teacher ID is required',
+                // 'teacher_id.exists' => 'Teacher ID not found',
+                'category_id.required' => 'Category ID is required',
+                'category_id.exists' => 'Category ID not found',
+                'word.required' => 'Word is required',
+                'translation.required' => 'Translation is required',
+            ],
+        );
+    }
 }

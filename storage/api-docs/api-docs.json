@@ -377,6 +377,1046 @@
                     }
                 }
             }
+        },
+        "/api/vocab/categories": {
+            "get": {
+                "tags": [
+                    "Vocabulary Categories"
+                ],
+                "summary": "Get all vocabulary categories",
+                "description": "Returns a list of all vocabulary categories.",
+                "operationId": "aa81c1060a88e116e57bc39836e1455e",
+                "parameters": [
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of vocabulary categories",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": "uuid-string"
+                                            },
+                                            "name": {
+                                                "type": "string",
+                                                "example": "nouns"
+                                            },
+                                            "color_code": {
+                                                "type": "string",
+                                                "example": "#FF0000"
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "example": "2025-07-15T07:19:54.000000Z"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "example": "2025-07-15T07:19:54.000000Z"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/categories/create": {
+            "post": {
+                "tags": [
+                    "Vocabulary Categories"
+                ],
+                "summary": "Create a new vocabulary category",
+                "description": "Adds a new vocabulary category. Requires authentication.",
+                "operationId": "7b4a1e4b73dd2bbff472bd310da04905",
+                "parameters": [
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "nouns"
+                                    },
+                                    "color_code": {
+                                        "type": "string",
+                                        "example": "#FF0000"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Category created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "uuid-string"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "nouns"
+                                                },
+                                                "color_code": {
+                                                    "type": "string",
+                                                    "example": "#FF0000"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "2025-07-15T07:19:54.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "example": "2025-07-15T07:19:54.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/categories/{id}": {
+            "get": {
+                "tags": [
+                    "Vocabulary Categories"
+                ],
+                "summary": "Get a specific vocabulary category",
+                "description": "Retrieve details of a specific category by its ID.",
+                "operationId": "3aa412353611facc4650612c497e7276",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID of the category",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "uuid-string"
+                        }
+                    },
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "example": "uuid-string"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "nouns"
+                                        },
+                                        "color_code": {
+                                            "type": "string",
+                                            "example": "#FF0000"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "example": "2025-07-15T07:19:54.000000Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "example": "2025-07-15T07:19:54.000000Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/categories/update/{id}": {
+            "patch": {
+                "tags": [
+                    "Vocabulary Categories"
+                ],
+                "summary": "Update an existing vocabulary category",
+                "description": "Update a vocabulary category's name or description.",
+                "operationId": "12c346f2bea07ebffb85618db290036d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID of the category",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "uuid-string"
+                        }
+                    },
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "verb"
+                                    },
+                                    "color_code": {
+                                        "type": "string",
+                                        "example": "#FFA000"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Category created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "uuid-string"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "verb"
+                                                },
+                                                "color_code": {
+                                                    "type": "string",
+                                                    "example": "#FFA000"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "2025-07-15T07:19:54.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "example": "2025-07-15T07:19:54.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocabulary-categories/{id}": {
+            "delete": {
+                "tags": [
+                    "Vocabulary Categories"
+                ],
+                "summary": "Delete a vocabulary category",
+                "description": "Delete a category by its UUID.",
+                "operationId": "c61b0fa02aa3bc51be0e1685123053b3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID of the category",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "uuid-string"
+                        }
+                    },
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/vocabularies": {
+            "get": {
+                "tags": [
+                    "Vocabulary"
+                ],
+                "summary": "Get all vocabularies",
+                "description": "Returns a list of all vocabulary entries.",
+                "operationId": "8deda9b34a4e017b542cd087eadd78c1",
+                "parameters": [
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of vocabulary entries",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "example": "uuid-string"
+                                            },
+                                            "teacher_id": {
+                                                "type": "string",
+                                                "example": "uuid-teacher"
+                                            },
+                                            "category_id": {
+                                                "type": "string",
+                                                "example": "uuid-category"
+                                            },
+                                            "word": {
+                                                "type": "string",
+                                                "example": "Elephant"
+                                            },
+                                            "translation": {
+                                                "type": "string",
+                                                "example": "Gajah"
+                                            },
+                                            "spelling": {
+                                                "type": "string",
+                                                "example": "ˈeləfənt"
+                                            },
+                                            "explanation": {
+                                                "type": "string",
+                                                "example": "A large mammal with trunk."
+                                            },
+                                            "audio_file_path": {
+                                                "type": "string",
+                                                "example": "audio/elephant.mp3"
+                                            },
+                                            "is_public": {
+                                                "type": "boolean",
+                                                "example": 1
+                                            },
+                                            "created_at": {
+                                                "type": "string",
+                                                "example": "2025-08-01T10:00:00Z"
+                                            },
+                                            "updated_at": {
+                                                "type": "string",
+                                                "example": "2025-08-01T10:00:00Z"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/create": {
+            "post": {
+                "tags": [
+                    "Vocabulary"
+                ],
+                "summary": "Create a new vocabulary entry",
+                "description": "Adds a new vocabulary entry to the system.",
+                "operationId": "2f4905fe290f9629fe6d93ae00a0addd",
+                "parameters": [
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "category_id",
+                                    "word",
+                                    "translation",
+                                    "is_public"
+                                ],
+                                "properties": {
+                                    "category_id": {
+                                        "type": "string",
+                                        "example": "uuid-category"
+                                    },
+                                    "word": {
+                                        "type": "string",
+                                        "example": "Elephant"
+                                    },
+                                    "translation": {
+                                        "type": "string",
+                                        "example": "Gajah"
+                                    },
+                                    "spelling": {
+                                        "type": "string",
+                                        "example": "ˈeləfənt"
+                                    },
+                                    "explanation": {
+                                        "type": "string",
+                                        "example": "A large mammal with trunk."
+                                    },
+                                    "audio_file_path": {
+                                        "type": "string",
+                                        "example": "audio/elephant.mp3"
+                                    },
+                                    "is_public": {
+                                        "type": "boolean",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Vocabulary created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vocabulary created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "uuid-string"
+                                                },
+                                                "teacher_id": {
+                                                    "type": "string",
+                                                    "example": "uuid-teacher"
+                                                },
+                                                "category_id": {
+                                                    "type": "string",
+                                                    "example": "uuid-category"
+                                                },
+                                                "word": {
+                                                    "type": "string",
+                                                    "example": "Elephant"
+                                                },
+                                                "translation": {
+                                                    "type": "string",
+                                                    "example": "Gajah"
+                                                },
+                                                "spelling": {
+                                                    "type": "string",
+                                                    "example": "ˈeləfənt"
+                                                },
+                                                "explanation": {
+                                                    "type": "string",
+                                                    "example": "A large mammal with trunk."
+                                                },
+                                                "audio_file_path": {
+                                                    "type": "string",
+                                                    "example": "audio/elephant.mp3"
+                                                },
+                                                "is_public": {
+                                                    "type": "boolean",
+                                                    "example": 1
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "2025-08-01T10:00:00Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "example": "2025-08-01T10:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/{id}": {
+            "get": {
+                "tags": [
+                    "Vocabulary"
+                ],
+                "summary": "Get a specific vocabulary entry",
+                "description": "Retrieve details of a vocabulary entry by its ID.",
+                "operationId": "6d139319c3bfab78f8915a27fb55eba4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID of the vocabulary",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "uuid-string"
+                        }
+                    },
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Vocabulary retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "example": "uuid-string"
+                                        },
+                                        "teacher_id": {
+                                            "type": "string",
+                                            "example": "uuid-teacher"
+                                        },
+                                        "category_id": {
+                                            "type": "string",
+                                            "example": "uuid-category"
+                                        },
+                                        "word": {
+                                            "type": "string",
+                                            "example": "Elephant"
+                                        },
+                                        "translation": {
+                                            "type": "string",
+                                            "example": "Gajah"
+                                        },
+                                        "spelling": {
+                                            "type": "string",
+                                            "example": "ˈeləfənt"
+                                        },
+                                        "explanation": {
+                                            "type": "string",
+                                            "example": "A large mammal with trunk."
+                                        },
+                                        "audio_file_path": {
+                                            "type": "string",
+                                            "example": "audio/elephant.mp3"
+                                        },
+                                        "is_public": {
+                                            "type": "boolean",
+                                            "example": 1
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "example": "2025-08-01T10:00:00Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "example": "2025-08-01T10:00:00Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Vocabulary not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/update/{id}": {
+            "patch": {
+                "tags": [
+                    "Vocabulary"
+                ],
+                "summary": "Update a vocabulary entry",
+                "description": "Updates an existing vocabulary entry.\n     *     **Note:** If using form-data or POST, include params `_method=PATCH`.",
+                "operationId": "8f39630d626e23bdb7b32f625e478c92",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID of the vocabulary",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "uuid-string"
+                        }
+                    },
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "category_id": {
+                                        "type": "string",
+                                        "example": "uuid-category"
+                                    },
+                                    "word": {
+                                        "type": "string",
+                                        "example": "Elephant Updated"
+                                    },
+                                    "translation": {
+                                        "type": "string",
+                                        "example": "Gajah Besar"
+                                    },
+                                    "spelling": {
+                                        "type": "string",
+                                        "example": "ˈeləfənt"
+                                    },
+                                    "explanation": {
+                                        "type": "string",
+                                        "example": "Updated explanation"
+                                    },
+                                    "audio_file_path": {
+                                        "type": "string",
+                                        "example": "audio/elephant-new.mp3"
+                                    },
+                                    "is_public": {
+                                        "type": "boolean",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Vocabulary updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vocabulary updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "uuid-string"
+                                                },
+                                                "teacher_id": {
+                                                    "type": "string",
+                                                    "example": "uuid-teacher"
+                                                },
+                                                "category_id": {
+                                                    "type": "string",
+                                                    "example": "uuid-category"
+                                                },
+                                                "word": {
+                                                    "type": "string",
+                                                    "example": "Elephant Updated"
+                                                },
+                                                "translation": {
+                                                    "type": "string",
+                                                    "example": "Gajah Besar"
+                                                },
+                                                "spelling": {
+                                                    "type": "string",
+                                                    "example": "ˈeləfənt"
+                                                },
+                                                "explanation": {
+                                                    "type": "string",
+                                                    "example": "Updated explanation"
+                                                },
+                                                "audio_file_path": {
+                                                    "type": "string",
+                                                    "example": "audio/elephant-new.mp3"
+                                                },
+                                                "is_public": {
+                                                    "type": "boolean",
+                                                    "example": 0
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "example": "2025-08-01T10:00:00Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "example": "2025-08-01T10:00:00Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Vocabulary not found"
+                    },
+                    "422": {
+                        "description": "Validation failed"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/delete/{id}": {
+            "delete": {
+                "tags": [
+                    "Vocabulary"
+                ],
+                "summary": "Delete a vocabulary entry",
+                "description": "Deletes a vocabulary entry by its UUID.",
+                "operationId": "8e62d2bc3c170c1d880b56cd72a31ca8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "UUID of the vocabulary",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "uuid-string"
+                        }
+                    },
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Vocabulary deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vocabulary deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Vocabulary not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
         }
     },
     "tags": [
@@ -387,6 +1427,14 @@
         {
             "name": "Test",
             "description": "Test"
+        },
+        {
+            "name": "Vocabulary Categories",
+            "description": "Vocabulary Categories"
+        },
+        {
+            "name": "Vocabulary",
+            "description": "Vocabulary"
         }
     ]
 }

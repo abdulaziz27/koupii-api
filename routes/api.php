@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\VocabularyCategoryController;
+use App\Http\Controllers\VocabularyController;
 
 /**
  * @OA\Info(
@@ -44,4 +46,20 @@ Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
     });
+});
+
+Route::middleware(['auth:sanctum', 'role:admin,teacher'])->prefix('vocab')->group(function () {
+    Route::prefix('categories')->group(function () {
+        Route::get('/', [VocabularyCategoryController::class, 'index']);
+        Route::get('/{id}', [VocabularyCategoryController::class, 'show']);
+        Route::post('/create', [VocabularyCategoryController::class, 'store']);
+        Route::patch('/update/{id}', [VocabularyCategoryController::class, 'update']);
+        Route::delete('/delete/{id}', [VocabularyCategoryController::class, 'destroy']);
+    });
+
+    Route::get('/vocabularies', [VocabularyController::class, 'index']);
+    Route::get('/{id}', [VocabularyController::class, 'show']);
+    Route::post('/create', [VocabularyController::class, 'store']);
+    Route::patch('/update/{id}', [VocabularyController::class, 'update']);
+    Route::delete('/delete/{id}', [VocabularyController::class, 'destroy']);
 });

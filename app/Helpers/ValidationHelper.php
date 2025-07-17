@@ -70,7 +70,6 @@ class ValidationHelper
         return Validator::make(
             $data,
             [
-                // 'teacher_id' => 'required|exists:users,id',
                 'category_id' => 'required|exists:vocabulary_categories,id',
                 'word' => 'required|string|max:255',
                 'translation' => 'required|string|max:255',
@@ -80,12 +79,67 @@ class ValidationHelper
                 'is_public' => 'boolean',
             ],
             [
-                // 'teacher_id.required' => 'Teacher ID is required',
-                // 'teacher_id.exists' => 'Teacher ID not found',
                 'category_id.required' => 'Category ID is required',
                 'category_id.exists' => 'Category ID not found',
                 'word.required' => 'Word is required',
                 'translation.required' => 'Translation is required',
+            ],
+        );
+    }
+
+    public static function class($data, $isUpdate = false)
+    {
+        return Validator::make(
+            $data,
+            [
+                'name' => ($isUpdate ? 'sometimes|' : '') . 'required|string|max:255',
+                'description' => 'nullable|string',
+                'class_code' => ($isUpdate ? 'sometimes|' : '') . 'required|string|max:50|unique:classes,class_code' . ($isUpdate ? ',' . ($data['id'] ?? 'NULL') : ''),
+                'cover_image' => 'nullable|string|max:255',
+                'is_active' => 'boolean',
+            ],
+            [
+                'name.required' => 'Class name is required',
+                'class_code.required' => 'Class code is required',
+                'class_code.unique' => 'Class code already exists',
+            ],
+        );
+    }
+
+    public static function classEnrollment($data, $isUpdate = false)
+    {
+        return Validator::make(
+            $data,
+            [
+                'class_id' => ($isUpdate ? 'sometimes|' : '') . 'required|exists:classes,id',
+                'status' => 'required|in:active,inactive,pending',
+                'enrolled_at' => 'nullable|date',
+            ],
+            [
+                'class_id.required' => 'Class is required',
+                'class_id.exists' => 'Class not found',
+                'status.required' => 'Status is required',
+                'status.in' => 'Status must be active, inactive, or pending',
+            ],
+        );
+    }
+
+    public static function classInvitation($data)
+    {
+        return Validator::make(
+            $data,
+            [
+                'class_id' => 'required|exists:classes,id',
+                'student_id' => 'required|exists:users,id',
+                'email' => 'required|exists:users,email',
+            ],
+            [
+                'class_id.required' => 'Class ID is required',
+                'class_id.exists' => 'Class does not exist',
+                'student_id.required' => 'Student ID is required',
+                'student_id.exists' => 'Student does not exist',
+                'email.required' => 'Email is required',
+                'email.exists' => 'Email does not exist',
             ],
         );
     }

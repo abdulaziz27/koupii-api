@@ -81,16 +81,19 @@ class VocabularyController extends Controller
      *     ),
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"category_id","word","translation","is_public"},
-     *             @OA\Property(property="category_id", type="string", example="uuid-category"),
-     *             @OA\Property(property="word", type="string", example="Elephant"),
-     *             @OA\Property(property="translation", type="string", example="Gajah"),
-     *             @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
-     *             @OA\Property(property="explanation", type="string", example="A large mammal with trunk."),
-     *             @OA\Property(property="audio_file_path", type="string", example="audio/elephant.mp3"),
-     *             @OA\Property(property="is_public", type="boolean", example=1)
-     *         )
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"category_id","word","translation","is_public"},
+     *                 @OA\Property(property="category_id", type="string", example="uuid-category"),
+     *                 @OA\Property(property="word", type="string", example="Elephant"),
+     *                 @OA\Property(property="translation", type="string", example="Gajah"),
+     *                 @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
+     *                 @OA\Property(property="explanation", type="string", example="A large mammal with trunk."),
+     *                 @OA\Property(property="audio_file_path", type="file", example="audio/elephant.mp3"),
+     *                 @OA\Property(property="is_public", type="boolean", example=1)
+     *             )
+     *          )
      *     ),
      *     @OA\Response(
      *         response=201,
@@ -146,6 +149,7 @@ class VocabularyController extends Controller
             DB::commit();
             return response()->json(['message' => 'Vocabulary created successfully', 'data' => $vocabulary], 201);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Server error' ,'error' => $e->getMessage()], 500);
         }
     }
@@ -200,7 +204,7 @@ class VocabularyController extends Controller
      */
     public function show($id)
     {
-        $vocabulary = Vocabulary::findOrFail($id);
+        $vocabulary = Vocabulary::find($id);
         if (!$vocabulary) {
             return response()->json(['error' => 'Vocabulary not found'], 404);
         }
@@ -212,8 +216,7 @@ class VocabularyController extends Controller
      *     path="/api/vocab/update/{id}",
      *     tags={"Vocabulary"},
      *     summary="Update a vocabulary entry",
-     *     description="Updates an existing vocabulary entry.
-     *     **Note:** If using form-data or POST, include params `_method=PATCH`.",
+     *     description="Updates an existing vocabulary entry.",
      *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="id",
@@ -236,16 +239,26 @@ class VocabularyController extends Controller
      *         description="Referring URL Frontend for CSRF protection",
      *         @OA\Schema(type="string", example="http://localhost:3000")
      *     ),
+     *     @OA\Parameter(
+     *         name="_method",
+     *         in="query",
+     *         required=true,
+     *         description="Override HTTP method for PATCH requests",
+     *         @OA\Schema(type="string", example="PATCH")
+     *     ),
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="category_id", type="string", example="uuid-category"),
-     *             @OA\Property(property="word", type="string", example="Elephant Updated"),
-     *             @OA\Property(property="translation", type="string", example="Gajah Besar"),
-     *             @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
-     *             @OA\Property(property="explanation", type="string", example="Updated explanation"),
-     *             @OA\Property(property="audio_file_path", type="string", example="audio/elephant-new.mp3"),
-     *             @OA\Property(property="is_public", type="boolean", example=0)
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="category_id", type="string", example="uuid-category"),
+     *                 @OA\Property(property="word", type="string", example="Elephant Updated"),
+     *                 @OA\Property(property="translation", type="string", example="Gajah Besar"),
+     *                 @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
+     *                 @OA\Property(property="explanation", type="string", example="Updated explanation"),
+     *                 @OA\Property(property="audio_file_path", type="file", example="audio/elephant-new.mp3"),
+     *                 @OA\Property(property="is_public", type="boolean", example=0)
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -275,7 +288,7 @@ class VocabularyController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $vocabulary = Vocabulary::findOrFail($id);
+        $vocabulary = Vocabulary::find($id);
         if (!$vocabulary) {
             return response()->json(['error' => 'Vocabulary not found'], 404);
         }
@@ -308,6 +321,7 @@ class VocabularyController extends Controller
             DB::commit();
             return response()->json(['message' => 'Vocabulary updated successfully', 'data' => $vocabulary], 200);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Server error' ,'error' => $e->getMessage()], 500);
         }
     }
@@ -352,7 +366,7 @@ class VocabularyController extends Controller
      */
     public function destroy($id)
     {
-        $vocabulary = Vocabulary::findOrFail($id);
+        $vocabulary = Vocabulary::find($id);
         if (!$vocabulary) {
             return response()->json(['error' => 'Vocabulary not found'], 404);
         }

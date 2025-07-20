@@ -244,7 +244,11 @@ class ClassInvitationController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $invitation = ClassInvitation::findOrFail($id);
+        $invitation = ClassInvitation::find($id);
+        if (!$invitation) {
+            return response()->json(['message' => 'Invitation not found'], 404);
+        }
+
         $user = auth()->user();
 
         if ($user->role === 'student' && $invitation->student_id !== $user->id) {
@@ -321,7 +325,11 @@ class ClassInvitationController extends Controller
      */
     public function destroy($id)
     {
-        $invitation = ClassInvitation::findOrFail($id);
+        $invitation = ClassInvitation::find($id);
+        if (!$invitation) {
+            return response()->json(['message' => 'Invitation not found'], 404);
+        }
+        
         $user = auth()->user();
 
         if ($user->role === 'teacher' && $invitation->class->teacher_id !== $user->id) {

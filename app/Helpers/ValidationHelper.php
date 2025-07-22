@@ -15,8 +15,6 @@ class ValidationHelper
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
                 'role' => 'required|in:teacher,student,admin',
-                'avatar' => 'nullable|url',
-                'bio' => 'nullable|string|max:1000',
             ],
             [
                 'name.required' => 'Name is required',
@@ -27,8 +25,6 @@ class ValidationHelper
                 'password.min' => 'Password must be at least 8 characters',
                 'role.required' => 'Role is required',
                 'role.in' => 'Role must be teacher, student, or admin',
-                'avatar.url' => 'Avatar must be a valid URL',
-                'bio.max' => 'Bio must be at most 1000 characters',
             ],
         );
     }
@@ -46,6 +42,32 @@ class ValidationHelper
                 'email.email' => 'Email must be a valid email address',
                 'password.required' => 'Password is required',
             ],
+        );
+    }
+
+    public static function profile($data)
+    {
+        return Validator::make(
+            $data,
+            [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . auth()->user()->id,
+                'role' => 'required|in:teacher,student,admin',
+                'avatar' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
+                'bio' => 'nullable|string',
+            ],
+            [
+                'name.required' => 'Name is required',
+                'email.required' => 'Email is required',
+                'email.email' => 'Email must be a valid email address',
+                'email.unique' => 'Email already exists',
+                'role.required' => 'Role is required',
+                'role.in' => 'Role must be teacher, student, or admin',
+                'avatar.file' => 'Avatar must be a file',
+                'avatar.mimetypes' => 'Avatar must be a JPEG, PNG, or JPG file',
+                'avatar.max' => 'Avatar size must be at most 2MB',
+                'bio.string' => 'Bio must be a string',
+            ]
         );
     }
 

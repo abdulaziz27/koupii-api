@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\VocabularyCategoryController;
 use App\Http\Controllers\VocabularyController;
 use App\Http\Controllers\ClassController;
@@ -49,6 +50,11 @@ Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
     });
+});
+
+Route::prefix('profile')->middleware('auth:sanctum')->group(function () {
+    Route::patch('/update', [UserController::class, 'update']);
+    Route::delete('/destroy', [UserController::class, 'destroy']);
 });
 
 Route::middleware(['auth:sanctum', 'role:admin,teacher'])

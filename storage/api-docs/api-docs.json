@@ -1964,6 +1964,242 @@
                 }
             }
         },
+        "/api/profile/update": {
+            "post": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Update user profile",
+                "description": "Update authenticated user's profile including name, email, role, avatar, and bio.",
+                "operationId": "7c0bd54ef563ec1c42a6e9dd59871113",
+                "parameters": [
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    },
+                    {
+                        "name": "_method",
+                        "in": "query",
+                        "description": "Override HTTP method for PATCH requests",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "PATCH"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "role"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Fika"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "student2@example.com"
+                                    },
+                                    "role": {
+                                        "type": "string",
+                                        "enum": [
+                                            "student",
+                                            "teacher",
+                                            "admin"
+                                        ],
+                                        "example": "student"
+                                    },
+                                    "bio": {
+                                        "type": "string",
+                                        "example": "Lorem ipsum dolor sit amet"
+                                    },
+                                    "avatar": {
+                                        "description": "User avatar image file",
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User updated successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "example": "d2fb93ec-6043-4384-814d-0e48f36aed50"
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Fika"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "student2@example.com"
+                                                },
+                                                "email_verified_at": {
+                                                    "type": "string",
+                                                    "example": null,
+                                                    "nullable": true
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "student"
+                                                },
+                                                "avatar": {
+                                                    "type": "string",
+                                                    "example": "/storage/avatar/687f8636256b0.png"
+                                                },
+                                                "bio": {
+                                                    "type": "string",
+                                                    "example": "Lorem ipsum dolor sit amet"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-07-17T07:08:54.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-07-22T12:38:14.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation errors",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/profile/destroy": {
+            "delete": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Delete user profile",
+                "description": "Delete the authenticated user's account, including avatar file if present.",
+                "operationId": "25bd5807c8c305b9fe8f3dc9ccbd04b9",
+                "parameters": [
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "User not found"
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/vocab/categories": {
             "get": {
                 "tags": [
@@ -3033,6 +3269,10 @@
         {
             "name": "Test",
             "description": "Test"
+        },
+        {
+            "name": "Profile",
+            "description": "Profile"
         },
         {
             "name": "Vocabulary Categories",

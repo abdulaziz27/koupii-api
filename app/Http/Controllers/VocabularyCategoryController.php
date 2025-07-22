@@ -107,8 +107,8 @@ class VocabularyCategoryController extends Controller
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
-
-            $existingCategory = VocabularyCategory::where('name', $request->name)->first();
+            
+            $existingCategory = VocabularyCategory::where('name', $request->input('name'))->first();
             if ($existingCategory) {
                 return response()->json(['error' => 'Category name already exists'], 422);
             }

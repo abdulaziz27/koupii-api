@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Classes;
 use App\Helpers\ValidationHelper;
+use App\Helpers\FileUploadHelper;
 use Illuminate\Support\Str;
 use DB;
 
@@ -72,7 +73,10 @@ class ClassController extends Controller
             }])->get(),
 
             'teacher' => Classes::where('teacher_id', $user->id)
-                ->with(['teacher' => fn ($q) => $q->select('id', 'name', 'email', 'avatar', 'bio')])->get(),
+                ->with([
+                    'teacher' => fn($q) => $q->select('id', 'name', 'email', 'avatar', 'bio')
+                ])
+                ->get(),
 
             default => null,
         };
@@ -151,8 +155,8 @@ class ClassController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $existingClass = Classes::where('name', $request->name)
-                ->where('teacher_id', auth()->user()->id)
+            $existingClass = Classes::where('name', $request->input('name'))
+                ->where('teacher_id', auth()->user()['id'])
                 ->first();
 
             if ($existingClass) {
@@ -161,12 +165,16 @@ class ClassController extends Controller
 
             $data = $validator->validated();
 
+            if ($request->hasFile('cover_image')) {
+                $data['cover_image'] = FileUploadHelper::upload($request->file('cover_image'), 'cover');
+            }
+
             $class = Classes::create([
                 'teacher_id' => auth()->user()->id,
                 'name' => $data['name'],
                 'description' => $data['description'] ?? null,
                 'class_code' => $data['class_code'] ?? strtoupper(Str::random(8)),
-                'cover_image' => isset($data['cover_image']) ?? null,
+                'cover_image' => isset($data['cover_image']) ? $data['cover_image'] : null,
                 'is_active' => $data['is_active'] ?? true,
             ]);
 
@@ -235,7 +243,7 @@ class ClassController extends Controller
      */
     public function show($id)
     {
-        $class = Classes::with(['teacher' => fn ($q) => $q->select('id', 'name', 'email', 'avatar', 'bio')])->find($id);
+        $class = Classes::with(['teacher' => fn($q) => $q->select('id', 'name', 'email', 'avatar', 'bio')])->find($id);
         if (!$class) {
             return response()->json(['message' => 'Class not found'], 404);
         }
@@ -335,6 +343,14 @@ class ClassController extends Controller
 
             $data = $validator->validated();
 
+            if ($request->hasFile('cover_image')) {
+                if ($class->cover_image) {
+                    FileUploadHelper::delete($class->cover_image);
+                }
+
+                $data['cover_image'] = FileUploadHelper::upload($request->file('cover_image'), 'cover');
+            }
+
             $class->update($data);
 
             DB::commit();
@@ -388,6 +404,10 @@ class ClassController extends Controller
         $user = auth()->user();
         if ($user->role !== 'admin' && $class->teacher_id !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        if ($class->cover_image) {
+            FileUploadHelper::delete($class->cover_image);
         }
 
         $class->delete();

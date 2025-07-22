@@ -118,6 +118,7 @@ class VocabularyCategoryController extends Controller
             DB::commit();
             return response()->json(['message' => 'Category created successfully', 'data' => $category], 201);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Server error' ,'error' => $e->getMessage()], 500);
         }
     }
@@ -166,7 +167,7 @@ class VocabularyCategoryController extends Controller
      */
     public function show($id)
     {
-        $category = VocabularyCategory::findOrFail($id);
+        $category = VocabularyCategory::find($id);
         if (!$category) {
             return response()->json(['error' => 'Category not found'], 404);
         }
@@ -230,7 +231,7 @@ class VocabularyCategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $category = VocabularyCategory::findOrFail($id);
+        $category = VocabularyCategory::find($id);
         if (!$category) {
             return response()->json(['error' => 'Category not found'], 404);
         }
@@ -247,13 +248,14 @@ class VocabularyCategoryController extends Controller
             DB::commit();
             return response()->json(['message' => 'Category updated successfully', 'data' => $category], 200);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Server error' ,'error' => $e->getMessage()], 500);
         }
     }
 
     /**
      * @OA\Delete(
-     *     path="/api/vocabulary-categories/{id}",
+     *     path="/api/vocab/categories/{id}",
      *     tags={"Vocabulary Categories"},
      *     summary="Delete a vocabulary category",
      *     description="Delete a category by its UUID.",
@@ -291,7 +293,7 @@ class VocabularyCategoryController extends Controller
      */
     public function destroy($id)
     {
-        $category = VocabularyCategory::findOrFail($id);
+        $category = VocabularyCategory::find($id);
         if (!$category) {
             return response()->json(['error' => 'Category not found'], 404);
         }

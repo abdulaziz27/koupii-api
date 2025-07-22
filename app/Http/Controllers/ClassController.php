@@ -235,7 +235,10 @@ class ClassController extends Controller
      */
     public function show($id)
     {
-        $class = Classes::with(['teacher' => fn ($q) => $q->select('id', 'name', 'email', 'avatar', 'bio')])->findOrFail($id);
+        $class = Classes::with(['teacher' => fn ($q) => $q->select('id', 'name', 'email', 'avatar', 'bio')])->find($id);
+        if (!$class) {
+            return response()->json(['message' => 'Class not found'], 404);
+        }
         return response()->json($class, 200);
     }
 
@@ -313,7 +316,10 @@ class ClassController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $class = Classes::findOrFail($id);
+        $class = Classes::find($id);
+        if (!$class) {
+            return response()->json(['error' => 'Class not found'], 404);
+        }
 
         $user = auth()->user();
         if ($user->role !== 'admin' && $class->teacher_id !== $user->id) {
@@ -374,7 +380,7 @@ class ClassController extends Controller
      */
     public function destroy($id)
     {
-        $class = Classes::findOrFail($id);
+        $class = Classes::find($id);
         if (!$class) {
             return response()->json(['message' => 'Class not found'], 404);
         }

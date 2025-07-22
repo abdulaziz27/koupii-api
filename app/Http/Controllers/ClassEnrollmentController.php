@@ -217,7 +217,10 @@ class ClassEnrollmentController extends Controller
      */
     public function show($id)
     {
-        $enrollment = ClassEnrollment::with(['class', 'student'])->findOrFail($id);
+        $enrollment = ClassEnrollment::with(['class', 'student'])->find($id);
+        if (!$enrollment) {
+            return response()->json(['message' => 'Enrollment not found'], 404);
+        }
         return response()->json($enrollment, 200);
     }
 
@@ -272,7 +275,10 @@ class ClassEnrollmentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $enrollment = ClassEnrollment::findOrFail($id);
+        $enrollment = ClassEnrollment::find($id);
+        if (!$enrollment) {
+            return response()->json(['message' => 'Enrollment not found'], 404);
+        }
 
         DB::beginTransaction();
         try {
@@ -342,7 +348,11 @@ class ClassEnrollmentController extends Controller
      */
     public function destroy($id)
     {
-        $enrollment = ClassEnrollment::findOrFail($id);
+        $enrollment = ClassEnrollment::find($id);
+        if (!$enrollment) {
+            return response()->json(['message' => 'Enrollment not found'], 404);
+        }
+        
         $user = auth()->user();
 
         $unauthorized = [

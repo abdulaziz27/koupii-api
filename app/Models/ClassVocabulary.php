@@ -8,16 +8,18 @@ use Illuminate\Support\Str;
 
 /**
  * @property string $id
- * @property string $name
- * @property string $color_code
+ * @property string $class_id
+ * @property string $vocabulary_id
+ * @property string $assigned_at
  */
-class VocabularyCategory extends Model
+class ClassVocabulary extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'color_code',
+        'class_id',
+        'vocabulary_id',
+        'assigned_at',
     ];
 
     public $incrementing = false;
@@ -32,8 +34,13 @@ class VocabularyCategory extends Model
         });
     }
 
-    public function vocabularies()
+    public function class()
     {
-        return $this->hasMany(Vocabulary::class, 'category_id');
+        return $this->belongsTo(Classes::class, 'class_id');
+    }
+
+    public function vocabulary()
+    {
+        return $this->belongsTo(Vocabulary::class);
     }
 }

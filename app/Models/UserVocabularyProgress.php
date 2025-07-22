@@ -8,16 +8,22 @@ use Illuminate\Support\Str;
 
 /**
  * @property string $id
- * @property string $name
- * @property string $color_code
+ * @property string $user_id
+ * @property string $vocabulary_id
+ * @property string $mastery_level
+ * @property string $review_count
+ * @property string $last_reviewed_at
  */
-class VocabularyCategory extends Model
+class UserVocabularyProgress extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'color_code',
+        'user_id',
+        'vocabulary_id',
+        'mastery_level',
+        'review_count',
+        'last_reviewed_at',
     ];
 
     public $incrementing = false;
@@ -32,8 +38,13 @@ class VocabularyCategory extends Model
         });
     }
 
-    public function vocabularies()
+    public function user()
     {
-        return $this->hasMany(Vocabulary::class, 'category_id');
+        return $this->belongsTo(User::class);
+    }
+
+    public function vocabulary()
+    {
+        return $this->belongsTo(Vocabulary::class);
     }
 }

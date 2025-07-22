@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * @property string $id
+ * @property string $class_id
+ * @property string $student_id
+ * @property string $status
+ * @property string $enrolled_at
+ */
 class ClassEnrollment extends Model
 {
     use HasFactory;

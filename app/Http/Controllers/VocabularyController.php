@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Vocabulary;
 use App\Helpers\ValidationHelper;
+use App\Helpers\FileUploadHelper;
 use DB;
 
 class VocabularyController extends Controller
@@ -54,7 +55,26 @@ class VocabularyController extends Controller
      */
     public function index()
     {
-        $vocabularies = Vocabulary::all();
+        $user = auth()->user();
+
+        $vocabularies = match ($user->role) {
+            'admin' => Vocabulary::with('teacher', 'category')->get(),
+
+            'teacher' => Vocabulary::where('teacher_id', $user->id)
+                ->with([
+                    'teacher' => fn($q) => $q->select('id', 'name'),
+                    'category' => fn($q) => $q->select('id', 'name', 'color_code'),
+
+                ])
+                ->get(),
+
+            default => null,
+        };
+
+        if (is_null($vocabularies)) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
         return response()->json($vocabularies, 200);
     }
 
@@ -122,18 +142,22 @@ class VocabularyController extends Controller
     public function store(Request $request)
     {
         DB::beginTransaction();
-        try{
+        try {
             $validator = ValidationHelper::vocabulary($request->all());
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $existingVocabulary = Vocabulary::where('word', $request->word)->first();
+            $existingVocabulary = Vocabulary::where('word', $request->input('word'))->first();
             if ($existingVocabulary) {
                 return response()->json(['error' => 'Vocabulary word already exists'], 422);
             }
 
             $data = $validator->validated();
+
+            if ($request->hasFile('audio_file_path')) {
+                $data['audio_file_path'] = FileUploadHelper::upload($request->file('audio_file_path'), 'audio');
+            }
 
             $vocabulary = Vocabulary::create([
                 'teacher_id' => auth()->user()->id,
@@ -142,7 +166,7 @@ class VocabularyController extends Controller
                 'translation' => $data['translation'],
                 'spelling' => $data['spelling'],
                 'explanation' => $data['explanation'],
-                'audio_file_path' => isset($data['audio_file_path']),
+                'audio_file_path' => isset($data['audio_file_path']) ? $data['audio_file_path'] : null,
                 'is_public' => $data['is_public'],
             ]);
 
@@ -150,7 +174,7 @@ class VocabularyController extends Controller
             return response()->json(['message' => 'Vocabulary created successfully', 'data' => $vocabulary], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Server error' ,'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -204,10 +228,16 @@ class VocabularyController extends Controller
      */
     public function show($id)
     {
-        $vocabulary = Vocabulary::find($id);
+        $vocabulary = Vocabulary::find($id)
+            ->with([
+                'teacher' => fn($q) => $q->select('id', 'name'),
+                'category' => fn($q) => $q->select('id', 'name', 'color_code')
+            ])
+            ->first();
         if (!$vocabulary) {
             return response()->json(['error' => 'Vocabulary not found'], 404);
         }
+
         return response()->json($vocabulary, 200);
     }
 
@@ -294,18 +324,34 @@ class VocabularyController extends Controller
         }
 
         DB::beginTransaction();
-        try{
+        try {
             $validator = ValidationHelper::vocabulary($request->all());
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $existingVocabulary = Vocabulary::where('word', $request->word)->where('id', '!=', $id)->first();
+            $existingVocabulary = Vocabulary::where('word', $request->input('word'))
+                ->where('id', '!=', $id)
+                ->where('teacher_id', auth()->user()->id)
+                ->first();
             if ($existingVocabulary) {
                 return response()->json(['error' => 'Vocabulary word already exists'], 422);
             }
 
+            $user = auth()->user();
+            if ($user->role !== 'admin' && $vocabulary->teacher_id !== $user->id) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+
             $data = $validator->validated();
+
+            if ($request->hasFile('audio_file_path')) {
+                if ($vocabulary->audio_file_path) {
+                    FileUploadHelper::delete($vocabulary->audio_file_path);
+                }
+
+                $data['audio_file_path'] = FileUploadHelper::upload($request->file('audio_file_path'), 'audio');
+            }
 
             $vocabulary->update([
                 'teacher_id' => auth()->user()->id,
@@ -314,7 +360,7 @@ class VocabularyController extends Controller
                 'translation' => $data['translation'],
                 'spelling' => $data['spelling'],
                 'explanation' => $data['explanation'],
-                'audio_file_path' => isset($data['audio_file_path']) ? $data['audio_file_path'] : $vocabulary->audio_file_path,
+                'audio_file_path' => $data['audio_file_path'] ?? $vocabulary->audio_file_path,
                 'is_public' => $data['is_public'],
             ]);
 
@@ -322,7 +368,7 @@ class VocabularyController extends Controller
             return response()->json(['message' => 'Vocabulary updated successfully', 'data' => $vocabulary], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Server error' ,'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -369,6 +415,15 @@ class VocabularyController extends Controller
         $vocabulary = Vocabulary::find($id);
         if (!$vocabulary) {
             return response()->json(['error' => 'Vocabulary not found'], 404);
+        }
+
+        $user = auth()->user();
+        if ($user->role !== 'admin' && $vocabulary->teacher_id !== $user->id) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        if ($vocabulary->audio_file_path) {
+            FileUploadHelper::delete($vocabulary->audio_file_path);
         }
 
         $vocabulary->delete();

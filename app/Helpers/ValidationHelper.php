@@ -15,8 +15,6 @@ class ValidationHelper
                 'email' => 'required|email|unique:users,email',
                 'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
                 'role' => 'required|in:teacher,student,admin',
-                'avatar' => 'nullable|url',
-                'bio' => 'nullable|string|max:1000',
             ],
             [
                 'name.required' => 'Name is required',
@@ -27,8 +25,6 @@ class ValidationHelper
                 'password.min' => 'Password must be at least 8 characters',
                 'role.required' => 'Role is required',
                 'role.in' => 'Role must be teacher, student, or admin',
-                'avatar.url' => 'Avatar must be a valid URL',
-                'bio.max' => 'Bio must be at most 1000 characters',
             ],
         );
     }
@@ -46,6 +42,32 @@ class ValidationHelper
                 'email.email' => 'Email must be a valid email address',
                 'password.required' => 'Password is required',
             ],
+        );
+    }
+
+    public static function profile($data)
+    {
+        return Validator::make(
+            $data,
+            [
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:users,email,' . auth()->user()->id,
+                'role' => 'required|in:teacher,student,admin',
+                'avatar' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
+                'bio' => 'nullable|string',
+            ],
+            [
+                'name.required' => 'Name is required',
+                'email.required' => 'Email is required',
+                'email.email' => 'Email must be a valid email address',
+                'email.unique' => 'Email already exists',
+                'role.required' => 'Role is required',
+                'role.in' => 'Role must be teacher, student, or admin',
+                'avatar.file' => 'Avatar must be a file',
+                'avatar.mimetypes' => 'Avatar must be a JPEG, PNG, or JPG file',
+                'avatar.max' => 'Avatar size must be at most 2MB',
+                'bio.string' => 'Bio must be a string',
+            ]
         );
     }
 
@@ -75,7 +97,7 @@ class ValidationHelper
                 'translation' => 'required|string|max:255',
                 'spelling' => 'nullable|string|max:255',
                 'explanation' => 'nullable|string',
-                'audio_file_path' => 'nullable|string|max:255',
+                'audio_file_path' => 'nullable|file|mimetypes:audio/mpeg,audio/mp3,audio/mpga,audio/wav,audio/ogg|max:2048',
                 'is_public' => 'boolean',
             ],
             [
@@ -95,11 +117,15 @@ class ValidationHelper
                 'name' => ($isUpdate ? 'sometimes|' : '') . 'required|string|max:255',
                 'description' => 'nullable|string',
                 'class_code' => ($isUpdate ? 'sometimes|' : '') . 'required|string|max:50|unique:classes,class_code' . ($isUpdate ? ',' . ($data['id'] ?? 'NULL') : ''),
-                'cover_image' => 'nullable|string|max:255',
+                'cover_image' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
                 'is_active' => 'boolean',
             ],
             [
                 'name.required' => 'Class name is required',
+                'name.string' => 'Class name must be a string',
+                'description.string' => 'Description must be a string',
+                'cover_image.mimetypes' => 'Cover image must be a JPEG or PNG image',
+                'cover_image.max' => 'Cover image size must be at most 2MB',
                 'class_code.required' => 'Class code is required',
                 'class_code.unique' => 'Class code already exists',
             ],

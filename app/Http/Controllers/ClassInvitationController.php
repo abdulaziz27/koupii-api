@@ -255,7 +255,7 @@ class ClassInvitationController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $status = $request->status;
+        $status = $request->input('status');
         if (!in_array($status, ['accepted', 'declined'])) {
             return response()->json(['message' => 'Invalid status'], 422);
         }
@@ -329,7 +329,7 @@ class ClassInvitationController extends Controller
         if (!$invitation) {
             return response()->json(['message' => 'Invitation not found'], 404);
         }
-        
+
         $user = auth()->user();
 
         if ($user->role === 'teacher' && $invitation->class->teacher_id !== $user->id) {

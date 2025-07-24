@@ -6,6 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * @property string $id
+ * @property string $teacher_id
+ * @property string $name
+ * @property string $description
+ * @property string $class_code
+ * @property string $cover_image
+ * @property string $is_active
+ */
 class Classes extends Model
 {
     use HasFactory;
@@ -20,7 +29,7 @@ class Classes extends Model
         'description',
         'class_code',
         'cover_image',
-        'is_active',
+        'is_active'
     ];
 
     protected static function boot()
@@ -46,5 +55,10 @@ class Classes extends Model
     public function invitations()
     {
         return $this->hasMany(ClassInvitation::class, 'class_id');
+    }
+
+    public function vocabularies()
+    {
+        return $this->belongsToMany(Vocabulary::class, 'class_vocabularies', 'class_id', 'vocabulary_id')->withPivot('assigned_at')->withTimestamps();
     }
 }

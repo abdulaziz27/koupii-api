@@ -146,7 +146,7 @@ class ClassEnrollmentController extends Controller
 
             $class = Classes::findOrFail($data['class_id']);
 
-            if ($request->class_code !== $class->class_code) {
+            if ($request->input('class_code') !== $class->class_code) {
                 return response()->json(['message' => 'Invalid class code'], 422);
             }
 
@@ -352,7 +352,7 @@ class ClassEnrollmentController extends Controller
         if (!$enrollment) {
             return response()->json(['message' => 'Enrollment not found'], 404);
         }
-        
+
         $user = auth()->user();
 
         $unauthorized = [

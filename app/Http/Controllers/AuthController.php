@@ -74,8 +74,6 @@ class AuthController extends Controller
                 'email' => $data['email'],
                 'password' => Hash::make($data['password']),
                 'role' => $data['role'],
-                'avatar' => $data['avatar'] ?? null,
-                'bio' => $data['bio'] ?? null,
             ]);
 
             Auth::login($user);
@@ -84,6 +82,7 @@ class AuthController extends Controller
 
             return response()->json(['message' => 'Registered & Logged in successfully'], 201);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Internal server error', 'error' => $e->getMessage()], 500);
         }
     }
@@ -153,6 +152,7 @@ class AuthController extends Controller
             DB::commit();
             return response()->json(['message' => 'Logged in successfully'], 200);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
         }
     }

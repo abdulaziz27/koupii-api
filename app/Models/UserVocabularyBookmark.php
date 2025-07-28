@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 /**
  * @property string $id
@@ -14,7 +14,11 @@ use Illuminate\Support\Str;
  */
 class UserVocabularyBookmark extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
+
+    protected $table = 'user_vocabulary_bookmarks';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'user_id',
@@ -22,17 +26,9 @@ class UserVocabularyBookmark extends Model
         'is_bookmarked',
     ];
 
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function booted()
-    {
-        static::creating(function ($model) {
-            if (!$model->getKey()) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
+    protected $casts = [
+        'is_bookmarked' => 'boolean',
+    ];
 
     public function user()
     {

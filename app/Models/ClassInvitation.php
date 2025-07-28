@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 /**
  * @property string $id
@@ -18,7 +18,7 @@ use Illuminate\Support\Str;
  */
 class ClassInvitation extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $table = 'class_invitations';
     public $incrementing = false;
@@ -34,17 +34,6 @@ class ClassInvitation extends Model
         'expires_at',
     ];
 
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function ($model) {
-            if (!$model->getKey()) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
-
-    /** Relationships */
     public function class()
     {
         return $this->belongsTo(Classes::class, 'class_id');

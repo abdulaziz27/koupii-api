@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 /**
  * @property string $id
@@ -14,25 +14,17 @@ use Illuminate\Support\Str;
  */
 class ClassVocabulary extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
+
+    protected $table = 'class_vocabulary';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected $fillable = [
         'class_id',
         'vocabulary_id',
         'assigned_at',
     ];
-
-    public $incrementing = false;
-    protected $keyType = 'string';
-
-    protected static function booted()
-    {
-        static::creating(function ($model) {
-            if (!$model->getKey()) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     public function class()
     {

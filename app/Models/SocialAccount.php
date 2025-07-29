@@ -9,34 +9,27 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $user_id
- * @property string $vocabulary_id
- * @property string $is_bookmarked
+ * @property string $provider
+ * @property string $provider_id
+ * @property string $provider_token
  */
-class UserVocabularyBookmark extends Model
+class SocialAccount extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $table = 'user_vocabulary_bookmarks';
+    protected $table = 'social_accounts';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
         'user_id',
-        'vocabulary_id',
-        'is_bookmarked',
-    ];
-
-    protected $casts = [
-        'is_bookmarked' => 'boolean',
+        'provider',
+        'provider_id',
+        'provider_token',
     ];
 
     public function user()
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function vocabulary()
-    {
-        return $this->belongsTo(Vocabulary::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

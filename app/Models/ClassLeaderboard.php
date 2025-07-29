@@ -9,29 +9,34 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $class_id
- * @property string $teacher_id
+ * @property string $assignment_id
  * @property string $student_id
- * @property string $email
- * @property string $invitation_token
- * @property string $status
- * @property string $expires_at
+ * @property float $score
+ * @property int $rank_position
+ * @property string $submission_status
+ * @property string $submission_date
  */
-class ClassInvitation extends Model
+class ClassLeaderboard extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $table = 'class_invitations';
+    protected $table = 'class_leaderboards';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
         'class_id',
-        'teacher_id',
+        'assignment_id',
         'student_id',
-        'email',
-        'invitation_token',
-        'status',
-        'expires_at',
+        'score',
+        'rank_position',
+        'submission_status',
+        'submission_date',
+    ];
+
+    protected $casts = [
+        'score' => 'decimal:2',
+        'submission_date' => 'datetime',
     ];
 
     public function class()
@@ -39,9 +44,9 @@ class ClassInvitation extends Model
         return $this->belongsTo(Classes::class, 'class_id');
     }
 
-    public function teacher()
+    public function assignment()
     {
-        return $this->belongsTo(User::class, 'teacher_id');
+        return $this->belongsTo(Assignment::class, 'assignment_id');
     }
 
     public function student()

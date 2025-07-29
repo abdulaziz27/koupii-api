@@ -76,7 +76,7 @@ class ClassEnrollmentController extends Controller
             'teacher' => ClassEnrollment::with(['class', 'student'])
                 ->whereIn('class_id', Classes::where('teacher_id', $user->id)->pluck('id'))
                 ->get(),
-            'student' => ClassEnrollment::with(['class', 'student'])
+            'student' => ClassEnrollment::with(['class.teacher:id,name,email,avatar', 'student'])
                 ->where('student_id', $user->id)
                 ->get(),
             default => null,
@@ -112,10 +112,8 @@ class ClassEnrollmentController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"class_id","class_code","status"},
-     *             @OA\Property(property="class_id", type="string", example="20d7c432-467b-433a-b035-b43481b5ee85"),
-     *             @OA\Property(property="class_code", type="string", example="lkoiun"),
-     *             @OA\Property(property="status", type="string", example="active")
+     *             required={"class_code"},
+     *             @OA\Property(property="class_code", type="string", example="1234567"),
      *         )
      *     ),
      *     @OA\Response(
@@ -126,7 +124,10 @@ class ClassEnrollmentController extends Controller
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="string", example="d40a0147-493f-4d70-bb4a-d7052e89e921"),
      *                 @OA\Property(property="class_id", type="string", example="20d7c432-467b-433a-b035-b43481b5ee85"),
-     *                 @OA\Property(property="status", type="string", example="active")
+     *                 @OA\Property(property="status", type="string", example="active"),
+     *                 @OA\Property(property="enrolled_at", type="string", example="2025-07-17T08:55:35.710993Z"),
+     *                 @OA\Property(property="created_at", type="string", example="2025-07-17T08:55:35.710993Z"),
+     *                 @OA\Property(property="updated_at", type="string", example="2025-07-17T08:55:35.710993Z")
      *             )
      *         )
      *     ),
@@ -142,18 +143,24 @@ class ClassEnrollmentController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $data = $validator->validated();
+            $class = Classes::where('class_code', $request->input('class_code'))->first();
 
-            $class = Classes::findOrFail($data['class_id']);
-
-            if ($request->input('class_code') !== $class->class_code) {
+            if (!$class) {
                 return response()->json(['message' => 'Invalid class code'], 422);
             }
 
+            $alreadyEnrolled = ClassEnrollment::where('class_id', $class->id)
+                ->where('student_id', auth()->id())
+                ->exists();
+
+            if ($alreadyEnrolled) {
+                return response()->json(['message' => 'You are already enrolled in this class.'], 409);
+            }
+
             $enrollment = ClassEnrollment::create([
-                'class_id' => $data['class_id'],
-                'student_id' => auth()->user()->id,
-                'status' => $data['status'],
+                'class_id' => $class->id,
+                'student_id' => auth()->id(),
+                'status' => 'active',
                 'enrolled_at' => now(),
             ]);
 
@@ -164,6 +171,7 @@ class ClassEnrollmentController extends Controller
             return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
         }
     }
+
 
     /**
      * @OA\Get(
@@ -255,8 +263,8 @@ class ClassEnrollmentController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"status"},
+     *             @OA\Property(property="class_id", type="string", example="20d7c432-467b-433a-b035-b43481b5ee85"),
      *             @OA\Property(property="status", type="string", example="inactive"),
-     *             @OA\Property(property="_method", type="string", example="PATCH")
      *         )
      *     ),
      *     @OA\Response(

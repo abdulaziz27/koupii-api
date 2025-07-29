@@ -137,14 +137,10 @@ class ValidationHelper
         return Validator::make(
             $data,
             [
-                'class_id' => ($isUpdate ? 'sometimes|' : '') . 'required|exists:classes,id',
-                'status' => 'required|in:active,inactive,pending',
+                'status' => 'sometimes|in:active,inactive,pending',
                 'enrolled_at' => 'nullable|date',
             ],
             [
-                'class_id.required' => 'Class is required',
-                'class_id.exists' => 'Class not found',
-                'status.required' => 'Status is required',
                 'status.in' => 'Status must be active, inactive, or pending',
             ],
         );
@@ -155,17 +151,13 @@ class ValidationHelper
         return Validator::make(
             $data,
             [
-                'class_id' => 'required|exists:classes,id',
-                'student_id' => 'required|exists:users,id',
-                'email' => 'required|exists:users,email',
+                'class_code' => 'required|exists:classes,class_code',
+                'email' => 'required',
             ],
             [
-                'class_id.required' => 'Class ID is required',
-                'class_id.exists' => 'Class does not exist',
-                'student_id.required' => 'Student ID is required',
-                'student_id.exists' => 'Student does not exist',
+                'class_code.required' => 'Class code is required',
+                'class_code.exists' => 'Class code does not exist',
                 'email.required' => 'Email is required',
-                'email.exists' => 'Email does not exist',
             ],
         );
     }

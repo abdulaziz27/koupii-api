@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\ClassInvitation;
 use App\Models\Classes;
 use App\Models\ClassEnrollment;
@@ -120,9 +121,8 @@ class ClassInvitationController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"class_id","student_id","email"},
-     *             @OA\Property(property="class_id", type="string", example="3d565341-2760-4454-bb36-a89cb2ead1a9"),
-     *             @OA\Property(property="student_id", type="string", example="d2fb93ec-6043-4384-814d-0e48f36aed50"),
+     *             required={"class_code","email"},
+     *             @OA\Property(property="class_code", type="string", example="1234567"),
      *             @OA\Property(property="email", type="string", example="student2@example.com")
      *         )
      *     ),
@@ -156,29 +156,38 @@ class ClassInvitationController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
 
-            $data = $validator->validated();
             $user = auth()->user();
-            $class = Classes::findOrFail($data['class_id']);
+
+            $class = Classes::where('class_code', $request->class_code)->first();
 
             if ($user->role === 'teacher' && $class->teacher_id !== $user->id) {
-                return response()->json(['error' => 'Unauthorized to invite to this class'], 403);
+                return response()->json(['message' => 'Unauthorized to invite to this class'], 403);
             }
 
-            $alreadyEnrolled = ClassEnrollment::where('class_id', $data['class_id'])->where('student_id', $data['student_id'])->exists();
+            $student = User::where('email', $request->email)->where('role', 'student')->first();
+            if (!$student) {
+                return response()->json(['message' => 'User not found or not a student'], 404);
+            }
+
+            $alreadyEnrolled = ClassEnrollment::where('class_id', $class->id)
+                ->where('student_id', $student->id)
+                ->exists();
             if ($alreadyEnrolled) {
                 return response()->json(['message' => 'Student already enrolled in this class'], 409);
             }
 
-            $existingInvitation = ClassInvitation::where('class_id', $data['class_id'])->where('student_id', $data['student_id'])->first();
+            $existingInvitation = ClassInvitation::where('class_id', $class->id)
+                ->where('student_id', $student->id)
+                ->first();
             if ($existingInvitation) {
                 return response()->json(['message' => 'Invitation already sent'], 409);
             }
 
             $invitation = ClassInvitation::create([
                 'teacher_id' => $user->id,
-                'class_id' => $data['class_id'],
-                'student_id' => $data['student_id'],
-                'email' => $data['email'],
+                'class_id' => $class->id,
+                'student_id' => $student->id,
+                'email' => $student->email,
                 'invitation_token' => bin2hex(random_bytes(16)),
                 'expires_at' => now()->addDays(1),
             ]);
@@ -233,7 +242,14 @@ class ClassInvitationController extends Controller
      *             @OA\Property(property="message", type="string", example="Invitation status updated"),
      *             @OA\Property(property="data", type="object",
      *                 @OA\Property(property="id", type="string", example="caccde25-0463-4acf-979e-46fca9b2315a"),
+     *                 @OA\Property(property="class_id", type="string", example="3d565341-2760-4454-bb36-a89cb2ead1a9"),
+     *                 @OA\Property(property="student_id", type="string", example="3d565341-2760-4454-bb36-a89cb2ead1a9"),
+     *                 @OA\Property(property="teacher_id", type="string", example="3d565341-2760-4454-bb36-a89cb2ead1a9"),
+     *                 @OA\Property(property="email", type="string", example="3d565341-2760-4454-bb36-a89cb2ead1a9"),
+     *                 @OA\Property(property="invitation_token", type="string", example="3d565341-2760-4454-bb36-a89cb2ead1a9"),
      *                 @OA\Property(property="status", type="string", example="accepted"),
+     *                 @OA\Property(property="expires_at", type="string", format="date-time", example="2025-07-17T09:18:42.000000Z"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-07-17T09:18:42.000000Z"),
      *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-07-17T09:18:42.000000Z")
      *             )
      *         )
@@ -273,7 +289,7 @@ class ClassInvitationController extends Controller
                     [
                         'status' => 'active',
                         'enrolled_at' => now(),
-                    ],
+                    ]
                 );
             }
 

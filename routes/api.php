@@ -80,6 +80,7 @@ Route::middleware('auth:sanctum')
     ->group(function () {
         Route::get('/', [ClassController::class, 'index']);
         Route::get('/{id}', [ClassController::class, 'show']);
+        Route::get('/{id}/students', [ClassController::class, 'students']);
         Route::middleware(['role:admin,teacher'])->group(function () {
             Route::post('/create', [ClassController::class, 'store']);
             Route::patch('/update/{id}', [ClassController::class, 'update']);

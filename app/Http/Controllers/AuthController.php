@@ -245,7 +245,7 @@ class AuthController extends Controller
 
     /**
      * @OA\Get(
-     *     path="/api/sanctum/csrf-cookie",
+     *     path="/sanctum/csrf-cookie",
      *     summary="Get CSRF token cookie for Sanctum",
      *     tags={"Auth"},
      *     description="This endpoint sets the XSRF-TOKEN cookie required for CSRF protection in session-based auth. Usually called before login.",

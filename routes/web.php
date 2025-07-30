@@ -34,4 +34,4 @@ Route::get('/api/test', function (Request $request) {
     return response()->json(['message' => 'API is working!']);
 });
 
-Route::get('/api/sanctum/csrf-cookie', [AuthController::class, 'sanctum']);
+Route::get('/sanctum/csrf-cookie', [AuthController::class, 'sanctum']);

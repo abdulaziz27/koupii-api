@@ -327,14 +327,14 @@
                 ]
             }
         },
-        "/api/sanctum/csrf-cookie": {
+        "/sanctum/csrf-cookie": {
             "get": {
                 "tags": [
                     "Auth"
                 ],
                 "summary": "Get CSRF token cookie for Sanctum",
                 "description": "This endpoint sets the XSRF-TOKEN cookie required for CSRF protection in session-based auth. Usually called before login.",
-                "operationId": "f2a9c54baf087a62c063dd3417809b2d",
+                "operationId": "d5484dc25fb583625272d29e50a62548",
                 "responses": {
                     "204": {
                         "description": "CSRF cookie set successfully",

@@ -161,4 +161,28 @@ class ValidationHelper
             ],
         );
     }
+
+    public static function changePassword($data)
+    {
+        return Validator::make(
+            $data,
+            [
+                'current_password' => 'required|string',
+                'new_password' => [
+                    'required',
+                    'string',
+                    'min:8',
+                    'confirmed',
+                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/'
+                ],
+            ],
+            [
+                'current_password.required' => 'Current password is required',
+                'new_password.required' => 'New password is required',
+                'new_password.min' => 'New password must be at least 8 characters',
+                'new_password.confirmed' => 'New password confirmation does not match',
+                'new_password.regex' => 'New password must include uppercase, lowercase, number, and special character',
+            ]
+        );
+    }
 }

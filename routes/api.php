@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\VocabularyCategoryController;
 use App\Http\Controllers\VocabularyController;
 use App\Http\Controllers\ClassController;
@@ -56,6 +57,10 @@ Route::prefix('profile')->middleware('auth:sanctum')->group(function () {
     Route::get('/{id}', [UserController::class, 'show']);
     Route::patch('/update', [UserController::class, 'update']);
     Route::delete('/destroy', [UserController::class, 'destroy']);
+});
+
+Route::prefix('password')->middleware('auth:sanctum')->group(function () {
+    Route::patch('/change-password', [PasswordController::class, 'changePassword']);
 });
 
 Route::middleware(['auth:sanctum', 'role:admin,teacher'])

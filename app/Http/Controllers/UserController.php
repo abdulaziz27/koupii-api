@@ -3,12 +3,77 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\User;
 use App\Helpers\ValidationHelper;
 use App\Helpers\FileUploadHelper;
 use DB;
 
 class UserController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/profile/{id}",
+     *     tags={"Profile"},
+     *     summary="Get user details by ID",
+     *     description="Retrieve public details of a user by their ID.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="X-XSRF-TOKEN",
+     *         in="header",
+     *         required=false,
+     *         description="CSRF token for session-based auth (Sanctum)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="Referer",
+     *         in="header",
+     *         required=false,
+     *         description="Referring URL Frontend for CSRF protection",
+     *         @OA\Schema(type="string", example="http://localhost:3000")
+     *     ),
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="User ID (UUID)",
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="Fika"),
+     *             @OA\Property(property="email", type="string", example="student2@example.com"),
+     *             @OA\Property(property="avatar", type="string", nullable=true, example="/storage/avatar/6887cfd4a9ec8.png"),
+     *             @OA\Property(property="bio", type="string", example="Student from Informatics")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="User not found")
+     *         )
+     *     )
+     * )
+     */
+    public function show($id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $data = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => $user->avatar,
+            'bio' => $user->bio
+        ];
+
+        return response()->json($data, 200);
+    }
+
     /**
      * @OA\Post(
      *     path="/api/profile/update",

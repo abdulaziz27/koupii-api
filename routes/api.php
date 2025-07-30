@@ -53,6 +53,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::prefix('profile')->middleware('auth:sanctum')->group(function () {
+    Route::get('/{id}', [UserController::class, 'show']);
     Route::patch('/update', [UserController::class, 'update']);
     Route::delete('/destroy', [UserController::class, 'destroy']);
 });

@@ -2150,6 +2150,99 @@
                 }
             }
         },
+        "/api/profile/{id}": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get user details by ID",
+                "description": "Retrieve public details of a user by their ID.",
+                "operationId": "dc381917fc0ff732960235c596a202d1",
+                "parameters": [
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "User ID (UUID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Fika"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "student2@example.com"
+                                        },
+                                        "avatar": {
+                                            "type": "string",
+                                            "example": "/storage/avatar/6887cfd4a9ec8.png",
+                                            "nullable": true
+                                        },
+                                        "bio": {
+                                            "type": "string",
+                                            "example": "Student from Informatics"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/profile/update": {
             "post": {
                 "tags": [

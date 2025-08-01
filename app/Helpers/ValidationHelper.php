@@ -97,7 +97,16 @@ class ValidationHelper
                 'translation' => 'required|string|max:255',
                 'spelling' => 'nullable|string|max:255',
                 'explanation' => 'nullable|string',
-                'audio_file_path' => 'nullable|file|mimetypes:audio/mpeg,audio/mp3,audio/mpga,audio/wav,audio/ogg|max:2048',
+                'audio_file_path' => [
+                    'nullable',
+                    'file',
+                    'max:2048',
+                    function ($attribute, $value, $fail) {
+                        if (!in_array(strtolower($value->getClientOriginalExtension()), ['mp3', 'wav', 'ogg'])) {
+                            $fail('The file must be an audio file like MP3, WAV, or OGG.');
+                        }
+                    },
+                ],
                 'is_public' => 'boolean',
             ],
             [

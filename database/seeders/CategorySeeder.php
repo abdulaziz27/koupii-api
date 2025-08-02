@@ -20,8 +20,7 @@ class CategorySeeder extends Seeder
 
         Category::updateOrCreate([
             'name' => 'Adjective',
-            'color_code' => '#EE47FF;
-'
+            'color_code' => '#EE47FF'
         ]);
 
         Category::updateOrCreate([

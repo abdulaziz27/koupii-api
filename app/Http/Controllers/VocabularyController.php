@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Vocabulary;
+use App\Models\UserVocabularyBookmark;
 use App\Helpers\ValidationHelper;
 use App\Helpers\FileUploadHelper;
 use DB;
@@ -44,10 +45,24 @@ class VocabularyController extends Controller
      *                 @OA\Property(property="translation", type="string", example="Gajah"),
      *                 @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
      *                 @OA\Property(property="explanation", type="string", example="A large mammal with trunk."),
-     *                 @OA\Property(property="audio_file_path", type="string", example="audio/elephant.mp3"),
-     *                 @OA\Property(property="is_public", type="boolean", example=1),
+     *                 @OA\Property(property="audio_file_path", type="string", example="/storage/audio/688cb485b0b72.mp3"),
+     *                 @OA\Property(property="is_public", type="boolean", example=true),
      *                 @OA\Property(property="created_at", type="string", example="2025-08-01T10:00:00Z"),
      *                 @OA\Property(property="updated_at", type="string", example="2025-08-01T10:00:00Z"),
+     *                 @OA\Property(property="is_bookmarked", type="boolean", example=false),
+     *                 @OA\Property(
+     *                     property="teacher",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="string", format="uuid", example="571bd78d-4879-44e0-9697-05b6e8bebc5d"),
+     *                     @OA\Property(property="name", type="string", example="Teacher User 1"),
+     *                ),
+     *                 @OA\Property(
+     *                     property="category",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="string", format="uuid", example="01985aba-6229-7398-8eb3-aec300a712a0"),
+     *                     @OA\Property(property="name", type="string", example="Noun"),
+     *                     @OA\Property(property="color_code", type="string", example="#FFC107"),
+     *                )
      *             )
      *         )
      *     )
@@ -67,6 +82,19 @@ class VocabularyController extends Controller
 
                 ])
                 ->get(),
+
+            'student' => Vocabulary::where('is_public', 1)
+                ->with([
+                    'teacher' => fn($q) => $q->select('id', 'name'),
+                    'category' => fn($q) => $q->select('id', 'name', 'color_code'),
+                    'bookmarks' => fn($q) => $q->where('user_id', $user->id),
+                ])
+                ->get()
+                ->map(function ($vocab) {
+                    $vocab->is_bookmarked = $vocab->bookmarks->first()?->is_bookmarked ?? false;
+                    unset($vocab->bookmarks);
+                    return $vocab;
+                }),
 
             default => null,
         };
@@ -110,7 +138,7 @@ class VocabularyController extends Controller
      *                 @OA\Property(property="translation", type="string", example="Gajah"),
      *                 @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
      *                 @OA\Property(property="explanation", type="string", example="A large mammal with trunk."),
-     *                 @OA\Property(property="audio_file_path", type="file", example="audio/elephant.mp3"),
+     *                 @OA\Property(property="audio_file_path", type="file", example="elephant.mp3"),
      *                 @OA\Property(property="is_public", type="boolean", example=1)
      *             )
      *          )
@@ -128,7 +156,7 @@ class VocabularyController extends Controller
      *                 @OA\Property(property="translation", type="string", example="Gajah"),
      *                 @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
      *                 @OA\Property(property="explanation", type="string", example="A large mammal with trunk."),
-     *                 @OA\Property(property="audio_file_path", type="string", example="audio/elephant.mp3"),
+     *                 @OA\Property(property="audio_file_path", type="string", example="/storage/audio/688cb485b0b72.mp3"),
      *                 @OA\Property(property="is_public", type="boolean", example=1),
      *                 @OA\Property(property="created_at", type="string", example="2025-08-01T10:00:00Z"),
      *                 @OA\Property(property="updated_at", type="string", example="2025-08-01T10:00:00Z")
@@ -217,7 +245,7 @@ class VocabularyController extends Controller
      *             @OA\Property(property="translation", type="string", example="Gajah"),
      *             @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
      *             @OA\Property(property="explanation", type="string", example="A large mammal with trunk."),
-     *             @OA\Property(property="audio_file_path", type="string", example="audio/elephant.mp3"),
+     *             @OA\Property(property="audio_file_path", type="string", example="/storage/audio/688cb485b0b72.mp3"),
      *             @OA\Property(property="is_public", type="boolean", example=1),
      *             @OA\Property(property="created_at", type="string", example="2025-08-01T10:00:00Z"),
      *             @OA\Property(property="updated_at", type="string", example="2025-08-01T10:00:00Z")
@@ -286,7 +314,7 @@ class VocabularyController extends Controller
      *                 @OA\Property(property="translation", type="string", example="Gajah Besar"),
      *                 @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
      *                 @OA\Property(property="explanation", type="string", example="Updated explanation"),
-     *                 @OA\Property(property="audio_file_path", type="file", example="audio/elephant-new.mp3"),
+     *                 @OA\Property(property="audio_file_path", type="file", example="elephant-new.mp3"),
      *                 @OA\Property(property="is_public", type="boolean", example=0)
      *             )
      *         )
@@ -304,7 +332,7 @@ class VocabularyController extends Controller
      *                 @OA\Property(property="translation", type="string", example="Gajah Besar"),
      *                 @OA\Property(property="spelling", type="string", example="ˈeləfənt"),
      *                 @OA\Property(property="explanation", type="string", example="Updated explanation"),
-     *                 @OA\Property(property="audio_file_path", type="string", example="audio/elephant-new.mp3"),
+     *                 @OA\Property(property="audio_file_path", type="string", example="/storage/audio/688cb485b0b72.mp3"),
      *                 @OA\Property(property="is_public", type="boolean", example=0),
      *                 @OA\Property(property="created_at", type="string", example="2025-08-01T10:00:00Z"),
      *                 @OA\Property(property="updated_at", type="string", example="2025-08-01T10:00:00Z")
@@ -428,5 +456,70 @@ class VocabularyController extends Controller
 
         $vocabulary->delete();
         return response()->json(['message' => 'Vocabulary deleted successfully'], 200);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/vocab/{id}/bookmark",
+     *     tags={"Vocabulary"},
+     *     summary="Toggle vocabulary bookmark",
+     *     description="Toggle the bookmark status of a vocabulary entry for the authenticated user.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the vocabulary",
+     *         @OA\Schema(type="string", example="123")
+     *     ),
+     *     @OA\Parameter(
+     *         name="X-XSRF-TOKEN",
+     *         in="header",
+     *         required=false,
+     *         description="CSRF token for session-based auth (Sanctum)",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="Referer",
+     *         in="header",
+     *         required=false,
+     *         description="Referring URL Frontend for CSRF protection",
+     *         @OA\Schema(type="string", example="http://localhost:3000")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Bookmark toggled successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Vocabulary bookmarked.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Vocabulary not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Vocabulary not found")
+     *         )
+     *     )
+     * )
+     */
+    public function toggleBookmark($id)
+    {
+        $user = auth()->user();
+        $vocabulary = Vocabulary::find($id);
+        if (!$vocabulary) {
+            return response()->json(['error' => 'Vocabulary not found'], 404);
+        }
+
+        $bookmark = UserVocabularyBookmark::firstOrNew([
+            'user_id' => $user->id,
+            'vocabulary_id' => $id,
+        ]);
+
+        $bookmark->is_bookmarked = !$bookmark->is_bookmarked;
+        $bookmark->save();
+
+        return response()->json([
+            'message' => $bookmark->is_bookmarked ? 'Vocabulary bookmarked.' : 'Bookmark removed.',
+        ], 200);
     }
 }

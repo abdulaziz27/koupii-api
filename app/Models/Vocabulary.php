@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $explanation
  * @property string $audio_file_path
  * @property string $is_public
+ * @property string $is_bookmarked
  */
 class Vocabulary extends Model
 {

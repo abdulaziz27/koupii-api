@@ -3125,11 +3125,11 @@
                                             },
                                             "audio_file_path": {
                                                 "type": "string",
-                                                "example": "audio/elephant.mp3"
+                                                "example": "/storage/audio/688cb485b0b72.mp3"
                                             },
                                             "is_public": {
                                                 "type": "boolean",
-                                                "example": 1
+                                                "example": true
                                             },
                                             "created_at": {
                                                 "type": "string",
@@ -3138,6 +3138,42 @@
                                             "updated_at": {
                                                 "type": "string",
                                                 "example": "2025-08-01T10:00:00Z"
+                                            },
+                                            "is_bookmarked": {
+                                                "type": "boolean",
+                                                "example": false
+                                            },
+                                            "teacher": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "format": "uuid",
+                                                        "example": "571bd78d-4879-44e0-9697-05b6e8bebc5d"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Teacher User 1"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            },
+                                            "category": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "format": "uuid",
+                                                        "example": "01985aba-6229-7398-8eb3-aec300a712a0"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Noun"
+                                                    },
+                                                    "color_code": {
+                                                        "type": "string",
+                                                        "example": "#FFC107"
+                                                    }
+                                                },
+                                                "type": "object"
                                             }
                                         },
                                         "type": "object"
@@ -3217,7 +3253,7 @@
                                     },
                                     "audio_file_path": {
                                         "type": "file",
-                                        "example": "audio/elephant.mp3"
+                                        "example": "elephant.mp3"
                                     },
                                     "is_public": {
                                         "type": "boolean",
@@ -3272,7 +3308,7 @@
                                                 },
                                                 "audio_file_path": {
                                                     "type": "string",
-                                                    "example": "audio/elephant.mp3"
+                                                    "example": "/storage/audio/688cb485b0b72.mp3"
                                                 },
                                                 "is_public": {
                                                     "type": "boolean",
@@ -3385,7 +3421,7 @@
                                         },
                                         "audio_file_path": {
                                             "type": "string",
-                                            "example": "audio/elephant.mp3"
+                                            "example": "/storage/audio/688cb485b0b72.mp3"
                                         },
                                         "is_public": {
                                             "type": "boolean",
@@ -3493,7 +3529,7 @@
                                     },
                                     "audio_file_path": {
                                         "type": "file",
-                                        "example": "audio/elephant-new.mp3"
+                                        "example": "elephant-new.mp3"
                                     },
                                     "is_public": {
                                         "type": "boolean",
@@ -3548,7 +3584,7 @@
                                                 },
                                                 "audio_file_path": {
                                                     "type": "string",
-                                                    "example": "audio/elephant-new.mp3"
+                                                    "example": "/storage/audio/688cb485b0b72.mp3"
                                                 },
                                                 "is_public": {
                                                     "type": "boolean",
@@ -3646,6 +3682,86 @@
                     },
                     "404": {
                         "description": "Vocabulary not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/vocab/{id}/bookmark": {
+            "post": {
+                "tags": [
+                    "Vocabulary"
+                ],
+                "summary": "Toggle vocabulary bookmark",
+                "description": "Toggle the bookmark status of a vocabulary entry for the authenticated user.",
+                "operationId": "f41bc45a1c299103022122574706401f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID of the vocabulary",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "123"
+                        }
+                    },
+                    {
+                        "name": "X-XSRF-TOKEN",
+                        "in": "header",
+                        "description": "CSRF token for session-based auth (Sanctum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Referer",
+                        "in": "header",
+                        "description": "Referring URL Frontend for CSRF protection",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "http://localhost:3000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bookmark toggled successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Vocabulary bookmarked."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Vocabulary not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Vocabulary not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 },
                 "security": [

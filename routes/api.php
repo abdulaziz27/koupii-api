@@ -63,10 +63,10 @@ Route::prefix('password')->middleware('auth:sanctum')->group(function () {
     Route::patch('/change-password', [PasswordController::class, 'changePassword']);
 });
 
-Route::middleware(['auth:sanctum', 'role:admin,teacher'])
+Route::middleware('auth:sanctum')
     ->prefix('vocab')
     ->group(function () {
-        Route::prefix('categories')->group(function () {
+        Route::middleware('role:admin,teacher')->prefix('categories')->group(function () {
             Route::get('/', [VocabularyCategoryController::class, 'index']);
             Route::get('/{id}', [VocabularyCategoryController::class, 'show']);
             Route::post('/create', [VocabularyCategoryController::class, 'store']);
@@ -74,11 +74,17 @@ Route::middleware(['auth:sanctum', 'role:admin,teacher'])
             Route::delete('/delete/{id}', [VocabularyCategoryController::class, 'destroy']);
         });
 
-        Route::get('/vocabularies', [VocabularyController::class, 'index']);
-        Route::get('/{id}', [VocabularyController::class, 'show']);
-        Route::post('/create', [VocabularyController::class, 'store']);
-        Route::patch('/update/{id}', [VocabularyController::class, 'update']);
-        Route::delete('/delete/{id}', [VocabularyController::class, 'destroy']);
+        Route::middleware('role:admin,teacher,student')->group(function () {
+            Route::get('/vocabularies', [VocabularyController::class, 'index']);
+            Route::post('/{id}/bookmark', [VocabularyController::class, 'toggleBookmark']);
+        });
+
+        Route::middleware('role:admin,teacher')->group(function () {
+            Route::get('/{id}', [VocabularyController::class, 'show']);
+            Route::post('/create', [VocabularyController::class, 'store']);
+            Route::patch('/update/{id}', [VocabularyController::class, 'update']);
+            Route::delete('/delete/{id}', [VocabularyController::class, 'destroy']);
+        });
     });
 
 Route::middleware('auth:sanctum')

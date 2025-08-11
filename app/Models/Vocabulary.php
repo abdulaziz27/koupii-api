@@ -58,11 +58,6 @@ class Vocabulary extends Model
 
     public function bookmarks()
     {
-        return $this->hasMany(UserVocabularyBookmark::class, 'vocabulary_id');
-    }
-
-    public function progresses()
-    {
-        return $this->hasMany(UserVocabularyProgress::class, 'vocabulary_id');
+        return $this->hasMany(VocabularyBookmark::class, 'vocabulary_id');
     }
 }

@@ -60,4 +60,14 @@ class Classes extends Model
     {
         return $this->hasMany(Assignment::class, 'class_id');
     }
+
+    public function analytics()
+    {
+        return $this->hasMany(ClassAnalytic::class, 'class_id');
+    }
+
+    public function testReports()
+    {
+        return $this->hasMany(TestReport::class, 'class_id');
+    }
 }

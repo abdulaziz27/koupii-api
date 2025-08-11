@@ -9,17 +9,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $test_id
- * @property string $passage_id
  * @property string $question_type_id
- * @property string $question_number
- * @property string $question_group
- * @property string $question_text
- * @property string $question_data
- * @property string $correct_answers
- * @property string $points_value
- * @property string $explanation
- * @property string $audio_start_time
- * @property string $audio_end_time
+ * @property int|null $question_number
+ * @property string|null $question_text
+ * @property array|null $question_data
+ * @property array|null $correct_answers
+ * @property float $points_value
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  */
 class TestQuestion extends Model
 {
@@ -31,38 +28,28 @@ class TestQuestion extends Model
 
     protected $fillable = [
         'test_id',
-        'passage_id',
         'question_type_id',
         'question_number',
-        'question_group',
         'question_text',
         'question_data',
         'correct_answers',
         'points_value',
-        'explanation',
-        'audio_start_time',
-        'audio_end_time',
     ];
 
     protected $casts = [
         'question_data' => 'array',
         'correct_answers' => 'array',
-        'points_value' => 'decimal:2',
+        'points_value' => 'float',
     ];
 
     public function test()
     {
-        return $this->belongsTo(Test::class);
-    }
-
-    public function passage()
-    {
-        return $this->belongsTo(TestPassage::class, 'passage_id');
+        return $this->belongsTo(Test::class, 'test_id');
     }
 
     public function questionType()
     {
-        return $this->belongsTo(QuestionType::class);
+        return $this->belongsTo(QuestionType::class, 'question_type_id');
     }
 
     public function options()
@@ -70,18 +57,23 @@ class TestQuestion extends Model
         return $this->hasMany(QuestionOption::class, 'question_id');
     }
 
-    public function responses()
+    public function studentAttempts()
     {
-        return $this->hasMany(QuestionResponse::class, 'question_id');
+        return $this->hasMany(StudentQuestionAttempt::class, 'question_id');
     }
 
-    public function audioRecordings()
+    public function breakdowns()
     {
-        return $this->hasMany(AudioRecording::class, 'question_id');
+        return $this->hasMany(QuestionBreakdown::class, 'question_id');
     }
 
-    public function instruction()
+    public function classAnalytics()
     {
-        return $this->belongsTo(QuestionInstruction::class, 'question_instruction_id');
+        return $this->hasMany(ClassAnalytic::class, 'most_mistaken_question_id');
+    }
+
+    public function testReports()
+    {
+        return $this->hasMany(TestReport::class, 'most_mistaken_question_id');
     }
 }

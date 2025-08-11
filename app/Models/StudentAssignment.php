@@ -11,12 +11,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $assignment_id
  * @property string $student_id
  * @property string $status
- * @property float $score
+ * @property float|null $score
  * @property int $attempt_number
- * @property array $submission_data
- * @property string $started_at
- * @property string $completed_at
- * @property string $submitted_at
+ * @property \Carbon\Carbon|null $started_at
+ * @property \Carbon\Carbon|null $completed_at
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  */
 class StudentAssignment extends Model
 {
@@ -32,18 +32,15 @@ class StudentAssignment extends Model
         'status',
         'score',
         'attempt_number',
-        'submission_data',
         'started_at',
         'completed_at',
-        'submitted_at',
     ];
 
     protected $casts = [
-        'score' => 'decimal:2',
-        'submission_data' => 'array',
+        'status' => 'string',
+        'score' => 'float',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
-        'submitted_at' => 'datetime',
     ];
 
     public function assignment()
@@ -54,5 +51,15 @@ class StudentAssignment extends Model
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');
+    }
+
+    public function questionAttempts()
+    {
+        return $this->hasMany(StudentQuestionAttempt::class, 'student_assignment_id');
+    }
+
+    public function testResult()
+    {
+        return $this->hasOne(TestResult::class, 'student_assignment_id');
     }
 }

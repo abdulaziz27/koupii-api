@@ -9,15 +9,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $class_id
- * @property string $test_id
+ * @property string|null $test_id
  * @property string $title
- * @property string $description
- * @property string $due_date
- * @property string $close_date
- * @property string $is_published
- * @property string $auto_grade
- * @property string $allow_retake
- * @property string $max_attempts
+ * @property string|null $description
+ * @property \Carbon\Carbon|null $due_date
+ * @property \Carbon\Carbon|null $close_date
+ * @property bool $is_published
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  */
 class Assignment extends Model
 {
@@ -35,15 +34,12 @@ class Assignment extends Model
         'due_date',
         'close_date',
         'is_published',
-        'auto_grade',
-        'allow_retake',
-        'max_attempts',
     ];
 
     protected $casts = [
         'is_published' => 'boolean',
-        'auto_grade' => 'boolean',
-        'allow_retake' => 'boolean',
+        'due_date' => 'datetime',
+        'close_date' => 'datetime',
     ];
 
     public function class()
@@ -56,18 +52,8 @@ class Assignment extends Model
         return $this->belongsTo(Test::class, 'test_id');
     }
 
-    public function classAnalytics()
-    {
-        return $this->hasMany(ClassAnalytic::class, 'assignment_id');
-    }
-
     public function studentAssignments()
     {
         return $this->hasMany(StudentAssignment::class, 'assignment_id');
-    }
-
-    public function classLeaderboards()
-    {
-        return $this->hasMany(ClassLeaderboard::class, 'assignment_id');
     }
 }

@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $id
  * @property string $user_id
  * @property string $teacher_plan_id
- * @property string $started_at
- * @property string $expires_at
+ * @property string|null $started_at
+ * @property string|null $expires_at
  * @property string $status
  */
 class TeacherSubscription extends Model

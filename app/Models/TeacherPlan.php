@@ -9,13 +9,10 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $name
+ * @property string|null $description
  * @property float $price
- * @property int $max_students
- * @property int $max_classrooms
- * @property boolean $can_create_tests
- * @property boolean $priority_support
- * @property array $features
- * @property boolean $is_active
+ * @property array $benefits
+ * @property bool $is_active
  */
 class TeacherPlan extends Model
 {
@@ -27,20 +24,15 @@ class TeacherPlan extends Model
 
     protected $fillable = [
         'name',
+        'description',
         'price',
-        'max_students',
-        'max_classrooms',
-        'can_create_tests',
-        'priority_support',
-        'features',
+        'benefits',
         'is_active',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
-        'can_create_tests' => 'boolean',
-        'priority_support' => 'boolean',
-        'features' => 'array',
+        'benefits' => 'array',
         'is_active' => 'boolean',
     ];
 

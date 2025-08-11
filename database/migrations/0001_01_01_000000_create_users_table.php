@@ -29,6 +29,17 @@ return new class extends Migration
             $table->timestamp('created_at')->nullable();
         });
 
+        Schema::create('social_accounts', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('user_id');
+            $table->enum('provider', ['google', 'apple', 'facebook']);
+            $table->string('provider_id');
+            $table->string('provider_token');
+            $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+        });
+
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();
@@ -46,6 +57,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('social_accounts');
         Schema::dropIfExists('sessions');
     }
 };

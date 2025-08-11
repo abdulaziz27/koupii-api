@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Vocabulary;
-use App\Models\UserVocabularyBookmark;
+use App\Models\VocabularyBookmark;
 use App\Helpers\ValidationHelper;
 use App\Helpers\FileUploadHelper;
 use DB;
@@ -510,7 +510,7 @@ class VocabularyController extends Controller
             return response()->json(['error' => 'Vocabulary not found'], 404);
         }
 
-        $bookmark = UserVocabularyBookmark::firstOrNew([
+        $bookmark = VocabularyBookmark::firstOrNew([
             'user_id' => $user->id,
             'vocabulary_id' => $id,
         ]);

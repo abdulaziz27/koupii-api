@@ -8,40 +8,47 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 /**
  * @property string $id
+ * @property string $test_id
  * @property string $class_id
- * @property int $total_students
+ * @property int $total_submissions
  * @property float|null $average_score
  * @property float|null $highest_score
  * @property float|null $lowest_score
  * @property string|null $most_mistaken_question_id
- * @property \Carbon\Carbon|null $report_date
+ * @property \Carbon\Carbon|null $report_generated_at
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class ClassAnalytic extends Model
+class TestReport extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $table = 'class_analytics';
+    protected $table = 'test_reports';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
+        'test_id',
         'class_id',
-        'total_students',
+        'total_submissions',
         'average_score',
         'highest_score',
         'lowest_score',
         'most_mistaken_question_id',
-        'report_date',
+        'report_generated_at',
     ];
 
     protected $casts = [
         'average_score' => 'float',
         'highest_score' => 'float',
         'lowest_score' => 'float',
-        'report_date' => 'datetime',
+        'report_generated_at' => 'datetime',
     ];
+
+    public function test()
+    {
+        return $this->belongsTo(Test::class, 'test_id');
+    }
 
     public function class()
     {
@@ -51,5 +58,10 @@ class ClassAnalytic extends Model
     public function mostMistakenQuestion()
     {
         return $this->belongsTo(TestQuestion::class, 'most_mistaken_question_id');
+    }
+
+    public function leaderboardEntries()
+    {
+        return $this->hasMany(LeaderboardEntry::class, 'test_report_id');
     }
 }

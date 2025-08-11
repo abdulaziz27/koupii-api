@@ -9,17 +9,18 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $creator_id
- * @property string $name
  * @property string $type
  * @property string $difficulty
- * @property string $description
- * @property string $time_limit_minutes
- * @property string $total_questions
- * @property string $is_published
- * @property string $is_public
- * @property string $allow_repetition
- * @property string $max_repetition_count
- * @property array $settings
+ * @property string $title
+ * @property string|null $description
+ * @property int|null $time_limit_minutes
+ * @property bool $allow_repetition
+ * @property int|null $max_repetition_count
+ * @property bool $is_public
+ * @property bool $is_published
+ * @property array|null $settings
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  */
 class Test extends Model
 {
@@ -31,53 +32,30 @@ class Test extends Model
 
     protected $fillable = [
         'creator_id',
-        'name',
         'type',
         'difficulty',
+        'title',
         'description',
         'time_limit_minutes',
-        'total_questions',
-        'is_published',
-        'is_public',
         'allow_repetition',
         'max_repetition_count',
+        'is_public',
+        'is_published',
         'settings',
     ];
 
     protected $casts = [
-        'settings' => 'array',
-        'is_published' => 'boolean',
-        'is_public' => 'boolean',
+        'type' => 'string',
+        'difficulty' => 'string',
         'allow_repetition' => 'boolean',
+        'is_public' => 'boolean',
+        'is_published' => 'boolean',
+        'settings' => 'array',
     ];
-
-    protected static function booted()
-    {
-        static::creating(function ($model) {
-            if (!$model->getKey()) {
-                $model->{$model->getKeyName()} = (string) Str::uuid();
-            }
-        });
-    }
 
     public function creator()
     {
         return $this->belongsTo(User::class, 'creator_id');
-    }
-
-    public function assignments()
-    {
-        return $this->hasMany(Assignment::class, 'test_id');
-    }
-
-    public function passages()
-    {
-        return $this->hasMany(TestPassage::class, 'test_id');
-    }
-
-    public function contentFiles()
-    {
-        return $this->hasMany(TestContentFile::class, 'test_id');
     }
 
     public function questions()
@@ -85,13 +63,33 @@ class Test extends Model
         return $this->hasMany(TestQuestion::class, 'test_id');
     }
 
-    public function sessions()
+    public function readingPassages()
     {
-        return $this->hasMany(TestSession::class, 'test_id');
+        return $this->hasMany(ReadingPassage::class, 'test_id');
     }
 
-    public function questionInstructions()
+    public function listeningPassages()
     {
-        return $this->hasMany(QuestionInstruction::class);
+        return $this->hasMany(ListeningPassage::class, 'test_id');
+    }
+
+    public function speakingSections()
+    {
+        return $this->hasMany(SpeakingSection::class, 'test_id');
+    }
+
+    public function writingTasks()
+    {
+        return $this->hasMany(WritingTask::class, 'test_id');
+    }
+
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class, 'test_id');
+    }
+
+    public function testReports()
+    {
+        return $this->hasMany(TestReport::class, 'test_id');
     }
 }

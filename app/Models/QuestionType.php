@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $name
- * @property string $category
- * @property array $template_structure
- * @property array $scoring_rules
- * @property boolean $is_active
+ * @property string $module
+ * @property array|null $structure
+ * @property array|null $scoring_rules
+ * @property bool $is_active
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
  */
 class QuestionType extends Model
 {
@@ -24,25 +26,41 @@ class QuestionType extends Model
 
     protected $fillable = [
         'name',
-        'category',
-        'template_structure',
+        'module',
+        'structure',
         'scoring_rules',
         'is_active',
     ];
 
     protected $casts = [
-        'template_structure' => 'array',
+        'module' => 'string',
+        'structure' => 'array',
         'scoring_rules' => 'array',
         'is_active' => 'boolean',
     ];
 
-    public function questions()
+    public function testQuestions()
     {
         return $this->hasMany(TestQuestion::class, 'question_type_id');
     }
 
-    public function questionInstructions()
+    public function readingQuestionGroups()
     {
-        return $this->hasMany(QuestionInstruction::class);
+        return $this->hasMany(ReadingQuestionGroup::class, 'question_type_id');
+    }
+
+    public function listeningQuestionGroups()
+    {
+        return $this->hasMany(ListeningQuestionGroup::class, 'question_type_id');
+    }
+
+    public function studentDashboardMetricsWeakest()
+    {
+        return $this->hasMany(StudentDashboardMetric::class, 'weakest_question_type_id');
+    }
+
+    public function studentDashboardMetricsBest()
+    {
+        return $this->hasMany(StudentDashboardMetric::class, 'best_question_type_id');
     }
 }

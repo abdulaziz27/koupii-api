@@ -13,7 +13,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $difficulty
  * @property string $title
  * @property string|null $description
- * @property int|null $time_limit_minutes
+ * @property string|null $timer_mode
+ * @property array|null $timer_settings
  * @property bool $allow_repetition
  * @property int|null $max_repetition_count
  * @property bool $is_public
@@ -36,7 +37,8 @@ class Test extends Model
         'difficulty',
         'title',
         'description',
-        'time_limit_minutes',
+        'timer_mode',
+        'timer_settings',
         'allow_repetition',
         'max_repetition_count',
         'is_public',
@@ -47,9 +49,11 @@ class Test extends Model
     protected $casts = [
         'type' => 'string',
         'difficulty' => 'string',
+        'timer_mode' => 'string',
         'allow_repetition' => 'boolean',
         'is_public' => 'boolean',
         'is_published' => 'boolean',
+        'timer_settings' => 'array',
         'settings' => 'array',
     ];
 
@@ -58,19 +62,9 @@ class Test extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
-    public function questions()
+    public function passages()
     {
-        return $this->hasMany(TestQuestion::class, 'test_id');
-    }
-
-    public function readingPassages()
-    {
-        return $this->hasMany(ReadingPassage::class, 'test_id');
-    }
-
-    public function listeningPassages()
-    {
-        return $this->hasMany(ListeningPassage::class, 'test_id');
+        return $this->hasMany(Passage::class, 'test_id');
     }
 
     public function speakingSections()

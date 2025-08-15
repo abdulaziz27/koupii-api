@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 /**
  * @property string $id
- * @property string $test_id
- * @property string $question_type_id
+ * @property string $question_group_id
  * @property int|null $question_number
  * @property string|null $question_text
  * @property array|null $question_data
@@ -27,8 +26,7 @@ class TestQuestion extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'test_id',
-        'question_type_id',
+        'question_group_id',
         'question_number',
         'question_text',
         'question_data',
@@ -42,14 +40,9 @@ class TestQuestion extends Model
         'points_value' => 'float',
     ];
 
-    public function test()
+    public function questionGroup()
     {
-        return $this->belongsTo(Test::class, 'test_id');
-    }
-
-    public function questionType()
-    {
-        return $this->belongsTo(QuestionType::class, 'question_type_id');
+        return $this->belongsTo(QuestionGroup::class, 'question_group_id');
     }
 
     public function options()
@@ -65,15 +58,5 @@ class TestQuestion extends Model
     public function breakdowns()
     {
         return $this->hasMany(QuestionBreakdown::class, 'question_id');
-    }
-
-    public function classAnalytics()
-    {
-        return $this->hasMany(ClassAnalytic::class, 'most_mistaken_question_id');
-    }
-
-    public function testReports()
-    {
-        return $this->hasMany(TestReport::class, 'most_mistaken_question_id');
     }
 }

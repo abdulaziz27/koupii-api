@@ -18,31 +18,44 @@ return new class extends Migration
             $table->enum('difficulty', ['beginner','intermediate','advanced'])->default('beginner');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->integer('time_limit_minutes')->nullable();
+            $table->enum('timer_mode', ['countdown', 'countup', 'none'])->default('none');
+            $table->json('timer_settings')->nullable();
             $table->boolean('allow_repetition')->default(false);
             $table->integer('max_repetition_count')->nullable();
             $table->boolean('is_public')->default(false);
-            $table->boolean('is_published')->default(false);
+            $table->boolean('is_published')->default(true);
             $table->json('settings')->nullable();
             $table->timestamps();
 
             $table->foreign('creator_id')->references('id')->on('users')->cascadeOnDelete();
         });
 
-        Schema::create('question_types', function (Blueprint $table) {
+        Schema::create('passages', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('name');
-            $table->enum('module', ['reading','listening','speaking','writing']);
-            $table->json('structure')->nullable();
-            $table->json('scoring_rules')->nullable();
-            $table->boolean('is_active')->default(true);
+            $table->uuid('test_id');
+            $table->string('title')->nullable();
+            $table->text('description')->nullable();
+            $table->string('audio_file_path')->nullable();
+            $table->enum('transcript_type', ['descriptive', 'conversation'])->nullable();
+            $table->json('transcript')->nullable();
             $table->timestamps();
+
+            $table->foreign('test_id')->references('id')->on('tests')->onDelete('cascade');
+        });
+
+        Schema::create('question_groups', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->uuid('passage_id');
+            $table->string('question_type');
+            $table->text('instruction')->nullable();
+            $table->timestamps();
+
+            $table->foreign('passage_id')->references('id')->on('passages')->onDelete('cascade');
         });
 
         Schema::create('test_questions', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('test_id');
-            $table->uuid('question_type_id');
+            $table->uuid('question_group_id');
             $table->integer('question_number')->nullable();
             $table->text('question_text')->nullable();
             $table->json('question_data')->nullable();
@@ -50,8 +63,7 @@ return new class extends Migration
             $table->decimal('points_value', 8, 2)->default(1);
             $table->timestamps();
 
-            $table->foreign('test_id')->references('id')->on('tests')->cascadeOnDelete();
-            $table->foreign('question_type_id')->references('id')->on('question_types')->cascadeOnDelete();
+            $table->foreign('question_group_id')->references('id')->on('question_groups')->onDelete('cascade');
         });
 
         Schema::create('question_options', function (Blueprint $table) {
@@ -72,9 +84,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tests');
-        Schema::dropIfExists('question_types');
-        Schema::dropIfExists('test_questions');
         Schema::dropIfExists('question_options');
+        Schema::dropIfExists('test_questions');
+        Schema::dropIfExists('question_groups');
+        Schema::dropIfExists('passages');
+        Schema::dropIfExists('tests');
     }
 };

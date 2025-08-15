@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property int|null $suggest_time_minutes
  * @property int|null $min_word_count
  * @property string|null $sample_answer
+ * @property array|null $images
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -34,10 +35,12 @@ class WritingTask extends Model
         'suggest_time_minutes',
         'min_word_count',
         'sample_answer',
+        'images',
     ];
 
     protected $casts = [
         'task_type' => 'string',
+        'images' => 'array',
     ];
 
     public function test()

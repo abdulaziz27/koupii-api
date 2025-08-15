@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property int $tasks_completed
  * @property int $total_time_spent_seconds
  * @property float|null $average_score
- * @property string|null $weakest_question_type_id
- * @property string|null $best_question_type_id
+ * @property string|null $weakest_question_type
+ * @property string|null $best_question_type
  * @property array|null $reading_progress_by_section
  * @property \Carbon\Carbon|null $metric_month
  * @property \Carbon\Carbon $created_at
@@ -32,14 +32,18 @@ class StudentDashboardMetric extends Model
         'tasks_completed',
         'total_time_spent_seconds',
         'average_score',
-        'weakest_question_type_id',
-        'best_question_type_id',
+        'weakest_question_type',
+        'best_question_type',
         'reading_progress_by_section',
         'metric_month',
     ];
 
     protected $casts = [
+        'tasks_completed' => 'integer',
+        'total_time_spent_seconds' => 'integer',
         'average_score' => 'float',
+        'weakest_question_type' => 'string',
+        'best_question_type' => 'string',
         'reading_progress_by_section' => 'array',
         'metric_month' => 'date',
     ];
@@ -47,15 +51,5 @@ class StudentDashboardMetric extends Model
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');
-    }
-
-    public function weakestQuestionType()
-    {
-        return $this->belongsTo(QuestionType::class, 'weakest_question_type_id');
-    }
-
-    public function bestQuestionType()
-    {
-        return $this->belongsTo(QuestionType::class, 'best_question_type_id');
     }
 }

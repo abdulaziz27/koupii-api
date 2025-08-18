@@ -11,15 +11,17 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $test_id
  * @property string|null $title
  * @property string|null $description
- * @property int|null $duration_minutes
+ * @property string|null $audio_file_path
+ * @property string|null $transcript_type
+ * @property array|null $transcript
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
-class ReadingPassage extends Model
+class Passage extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $table = 'reading_passages';
+    protected $table = 'passages';
     public $incrementing = false;
     protected $keyType = 'string';
 
@@ -27,7 +29,14 @@ class ReadingPassage extends Model
         'test_id',
         'title',
         'description',
-        'duration_minutes',
+        'audio_file_path',
+        'transcript_type',
+        'transcript',
+    ];
+
+    protected $casts = [
+        'transcript_type' => 'string',
+        'transcript' => 'array',
     ];
 
     public function test()
@@ -37,6 +46,6 @@ class ReadingPassage extends Model
 
     public function questionGroups()
     {
-        return $this->hasMany(ReadingQuestionGroup::class, 'passage_id');
+        return $this->hasMany(QuestionGroup::class, 'passage_id');
     }
 }

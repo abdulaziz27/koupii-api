@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $test_id
  * @property string $section_type
  * @property string|null $description
- * @property int|null $time_limit_seconds
  * @property int|null $prep_time_seconds
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
@@ -28,7 +27,6 @@ class SpeakingSection extends Model
         'test_id',
         'section_type',
         'description',
-        'time_limit_seconds',
         'prep_time_seconds',
     ];
 
@@ -39,5 +37,10 @@ class SpeakingSection extends Model
     public function test()
     {
         return $this->belongsTo(Test::class, 'test_id');
+    }
+
+    public function topics()
+    {
+        return $this->hasMany(SpeakingTopic::class, 'speaking_section_id');
     }
 }

@@ -19,9 +19,13 @@
     format json
   }
 
-  # Handle PHP files
-  php_server
+  # Handle all requests with PHP
+  handle {
+    php_server
+  }
 
   # Serve static files
-  file_server
+  handle {
+    file_server
+  }
 }

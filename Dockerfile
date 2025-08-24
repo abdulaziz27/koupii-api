@@ -82,13 +82,13 @@ RUN chown -R www:www /app && \
     chmod -R 775 /app/storage /app/bootstrap/cache
 
 # Create FrankenPHP configuration for worker mode
-COPY <<EOF /app/.frankenphp.php
+COPY <<'EOF' /app/.frankenphp.php
 <?php
 
 return [
     'worker' => [
         'file' => '/app/public/index.php',
-        'num' => $_ENV['FRANKENPHP_WORKERS'] ?? 4,
+        'num' => (int)($_ENV['FRANKENPHP_WORKERS'] ?? 4),
     ],
 ];
 EOF

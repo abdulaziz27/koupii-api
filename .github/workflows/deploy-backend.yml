@@ -273,14 +273,10 @@ jobs:
             sudo find mysql-data -type d -exec chmod 750 {} \;
             sudo find mysql-data -type f -exec chmod 640 {} \;
 
-            # Reset MySQL database (development environment)
-            echo "Resetting MySQL database for clean deployment..."
-            sudo rm -rf mysql-data/*
+                        # Clean MySQL data directory (development environment)
+            echo "Cleaning MySQL data directory..."
+            sudo rm -rf mysql-data
             sudo mkdir -p mysql-data
-
-            # Remove corrupted redo log directory (safe when MySQL is stopped)
-            echo "Cleaning up MySQL redo log directory..."
-            sudo rm -rf mysql-data/#innodb_redo || true
 
             # Fix Laravel storage permissions
             sudo chown -R 1000:1000 storage bootstrap-cache
@@ -310,11 +306,11 @@ jobs:
             echo "Starting database first..."
             docker compose up -d db
             echo "Waiting for database to be healthy..."
-            timeout=60
+            timeout=30
             count=0
             while ! docker compose ps db | grep -q "healthy"; do
                 if [ $count -ge $timeout ]; then
-                    echo "Database health check timeout, continuing anyway..."
+                    echo "Database health check timeout after ${timeout}s, continuing anyway..."
                     break
                 fi
                 echo "Database not ready, waiting 2 seconds... ($count/$timeout)"
@@ -323,7 +319,11 @@ jobs:
             done
 
             echo "Deploying application..."
-            docker compose up -d --remove-orphans
+            timeout 300 docker compose up -d --remove-orphans || echo "Deployment timeout, checking status..."
+
+            # Debug: Show container status
+            echo "=== Container Status ==="
+            docker compose ps
 
             # Health check from host
             echo "Performing health check..."

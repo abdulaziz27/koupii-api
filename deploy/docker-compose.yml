@@ -123,5 +123,5 @@ services:
 
 networks:
     koupii-network:
-        driver: bridge
+        external: true
         name: koupii-network

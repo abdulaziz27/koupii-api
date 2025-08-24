@@ -136,6 +136,10 @@ jobs:
             IMAGE="ghcr.io/$IMAGE_NAME_LOWER:$GITHUB_SHA"
             echo "Using image: $IMAGE"
 
+            # Create external network if not exists
+            echo "Ensuring koupii-network exists..."
+            docker network create koupii-network || true
+            
             # Login to GitHub Container Registry
             echo "Logging into GitHub Container Registry..."
             echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USERNAME" --password-stdin
@@ -246,7 +250,7 @@ jobs:
 
             networks:
               koupii-network:
-                driver: bridge
+                external: true
                 name: koupii-network
             EOF
 

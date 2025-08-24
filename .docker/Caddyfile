@@ -12,15 +12,13 @@
 :80 {
   root * /app/public
 
-  # Handle all requests with PHP
-  handle {
+  # Route for PHP processing
+  route {
     php_server
   }
 
   # Serve static files
-  handle {
-    file_server
-  }
+  file_server
 
   # Enable compression
   encode zstd br gzip

@@ -201,11 +201,11 @@ jobs:
                   redis:
                     condition: service_healthy
                 healthcheck:
-                  test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health >/dev/null 2>&1 || exit 1"]
+                  test: ["CMD-SHELL", "(curl -fsS http://localhost:8080/api/health || wget -qO- http://localhost:8080/api/health || busybox wget -qO- http://localhost:8080/api/health) >/dev/null 2>&1 || exit 1"]
                   interval: 30s
                   timeout: 10s
-                  retries: 3
-                  start_period: 90s
+                  retries: 5
+                  start_period: 120s
                 networks: ["koupii-network"]
 
               queue:
@@ -213,7 +213,7 @@ jobs:
                 container_name: koupii-api-queue
                 restart: unless-stopped
                 env_file: [".env"]
-                environment: 
+                environment:
                   - CONTAINER_ROLE=queue
                   - DB_HOST=db
                   - REDIS_HOST=redis
@@ -231,7 +231,7 @@ jobs:
                 container_name: koupii-api-scheduler
                 restart: unless-stopped
                 env_file: [".env"]
-                environment: 
+                environment:
                   - CONTAINER_ROLE=scheduler
                   - DB_HOST=db
                   - REDIS_HOST=redis
@@ -259,12 +259,12 @@ jobs:
             mkdir -p mysql-data redis-data
             sudo chown -R 1000:1000 storage bootstrap-cache
             sudo chmod -R 775 storage bootstrap-cache mysql-data redis-data
-            
+
             # Update .env to use containerized database
             echo "Updating .env for containerized services..."
             sed -i 's/DB_HOST=127.0.0.1/DB_HOST=db/' .env
             sed -i 's/REDIS_HOST=127.0.0.1/REDIS_HOST=redis/' .env
-            
+
             # Add DB_ROOT_PASSWORD if not exists
             if ! grep -q "DB_ROOT_PASSWORD" .env; then
               echo "DB_ROOT_PASSWORD=rootpass" >> .env

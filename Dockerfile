@@ -46,6 +46,7 @@ FROM dunglas/frankenphp:latest-php8.3
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     curl \
+    wget \
     zip \
     unzip \
     git \

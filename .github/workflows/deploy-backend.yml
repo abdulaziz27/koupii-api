@@ -96,48 +96,54 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Add server to known_hosts
+        run: |
+          ssh-keyscan -p ${PORT:-22} ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+        env:
+          PORT: ${{ secrets.VPS_PORT }}
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         env:
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          REGISTRY_USERNAME: ${{ github.actor }}
-          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN || secrets.GITHUB_TOKEN }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT || 22 }}
+          port: ${{ secrets.VPS_PORT }}
           timeout: 300s
           command_timeout: 600s
           envs: GITHUB_SHA,GITHUB_REPOSITORY,REGISTRY_USERNAME,REGISTRY_TOKEN
           script: |
-            set -e
+            set -euo pipefail
 
-            # Define variables
             APP_DIR="/srv/apps/koupii-api"
-            DEPLOY_DIR="$APP_DIR/deploy"
-
-            # Create application directory if it doesn't exist
-            sudo mkdir -p $APP_DIR
-            sudo mkdir -p $DEPLOY_DIR
-
-            # Set proper ownership
-            sudo chown -R $USER:$USER $APP_DIR
-
-            # Navigate to app directory
-            cd $APP_DIR
+            sudo mkdir -p "$APP_DIR" && sudo chown -R "$USER:$USER" "$APP_DIR"
+            cd "$APP_DIR"
 
             echo "=== Starting Koupii API Deployment ==="
             echo "Deploying commit: $GITHUB_SHA"
+            echo "Repository: $GITHUB_REPOSITORY"
             echo "Timestamp: $(date)"
 
-            # Create docker-compose.yml with proper variable substitution
-            cat > docker-compose.yml << EOF
+            # GHCR path wajib lowercase
+            IMAGE_NAME_LOWER=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+            IMAGE="ghcr.io/$IMAGE_NAME_LOWER:$GITHUB_SHA"
+            echo "Using image: $IMAGE"
+
+            # Login to GitHub Container Registry
+            echo "Logging into GitHub Container Registry..."
+            echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USERNAME" --password-stdin
+
+            # Create docker-compose.yml with shell variables
+            cat > docker-compose.yml <<EOF
             # Production Docker Compose for Koupii API
             services:
               app:
-                image: ghcr.io/${GITHUB_REPOSITORY}:\${GITHUB_SHA:-latest}
+                image: $IMAGE
                 container_name: koupii-api-app
                 restart: unless-stopped
                 ports:
@@ -151,22 +157,19 @@ jobs:
                   - ./storage:/app/storage
                   - ./bootstrap-cache:/app/bootstrap/cache
                 healthcheck:
-                  test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+                  test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health >/dev/null 2>&1 || exit 1"]
                   interval: 30s
                   timeout: 10s
                   retries: 3
                   start_period: 60s
-                networks:
-                  - koupii-network
+                networks: ["koupii-network"]
 
               queue:
-                image: ghcr.io/${GITHUB_REPOSITORY}:\${GITHUB_SHA:-latest}
+                image: $IMAGE
                 container_name: koupii-api-queue
                 restart: unless-stopped
-                env_file:
-                  - ./.env
-                environment:
-                  - CONTAINER_ROLE=queue
+                env_file: [".env"]
+                environment: ["CONTAINER_ROLE=queue"]
                 command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
                 volumes:
                   - ./storage:/app/storage
@@ -174,17 +177,14 @@ jobs:
                 depends_on:
                   app:
                     condition: service_healthy
-                networks:
-                  - koupii-network
+                networks: ["koupii-network"]
 
               scheduler:
-                image: ghcr.io/${GITHUB_REPOSITORY}:\${GITHUB_SHA:-latest}
+                image: $IMAGE
                 container_name: koupii-api-scheduler
                 restart: unless-stopped
-                env_file:
-                  - ./.env
-                environment:
-                  - CONTAINER_ROLE=scheduler
+                env_file: [".env"]
+                environment: ["CONTAINER_ROLE=scheduler"]
                 command: php artisan schedule:work
                 volumes:
                   - ./storage:/app/storage
@@ -192,8 +192,7 @@ jobs:
                 depends_on:
                   app:
                     condition: service_healthy
-                networks:
-                  - koupii-network
+                networks: ["koupii-network"]
 
             networks:
               koupii-network:
@@ -202,70 +201,33 @@ jobs:
             EOF
 
             # Check if .env exists
-            if [ ! -f .env ]; then
-              echo "ERROR: .env file not found at $APP_DIR/.env"
-              echo "Please create the .env file with production configuration"
-              echo "You can use the env.sample as a template"
-              exit 1
-            fi
-
-            # Export environment variables for docker-compose
-            export GITHUB_SHA=$GITHUB_SHA
-
-            # Login to GitHub Container Registry
-            echo "Logging into GitHub Container Registry..."
-            echo "$REGISTRY_TOKEN" | docker login ghcr.io -u "$REGISTRY_USERNAME" --password-stdin
+            [ -f .env ] || { echo "ERROR: $APP_DIR/.env not found"; exit 1; }
 
             # Create required directories with proper permissions
             echo "Creating required directories..."
-            mkdir -p storage/app/public
-            mkdir -p storage/framework/{cache,sessions,views}
-            mkdir -p storage/logs
-            mkdir -p bootstrap-cache
-
-            # Set proper permissions (1000:1000 is the www user in the container)
+            mkdir -p storage/app/public storage/framework/{cache,sessions,views} storage/logs bootstrap-cache
             sudo chown -R 1000:1000 storage bootstrap-cache
             sudo chmod -R 775 storage bootstrap-cache
 
-            # Pull the latest images
+            # Pull and deploy
             echo "Pulling Docker images..."
             docker compose pull
 
-            # Deploy the application
             echo "Deploying application..."
             docker compose up -d --remove-orphans
 
-            # Wait for application to be ready
-            echo "Waiting for application to be ready..."
-            sleep 30
-
-            # Health check
+            # Health check from host
             echo "Performing health check..."
-            max_retries=30
-            retry_count=0
-
-            while [ $retry_count -lt $max_retries ]; do
-              if curl -fsS http://127.0.0.1:8081/api/health > /dev/null 2>&1; then
+            for i in {1..30}; do
+              if curl -fsS http://127.0.0.1:8081/api/health >/dev/null 2>&1; then
                 echo "✅ Health check passed!"
                 break
               fi
-
-              retry_count=$((retry_count + 1))
-              echo "Health check failed (attempt $retry_count/$max_retries), retrying in 10s..."
-              sleep 10
+              echo "Health check attempt $i/30, retrying in 5s..."
+              sleep 5
             done
 
-            if [ $retry_count -eq $max_retries ]; then
-              echo "❌ Health check failed after $max_retries attempts"
-              echo "Deployment failed!"
-
-              # Show container logs for debugging
-              echo "=== Container Logs ==="
-              docker compose logs --tail=50
-              exit 1
-            fi
-
-            # Show deployment status
+            # Verify deployment
             echo "=== Deployment Status ==="
             docker compose ps
 
@@ -275,7 +237,7 @@ jobs:
 
             # Keep only last 3 versions
             docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.CreatedAt}}" | \
-              grep "ghcr.io/${GITHUB_REPOSITORY}" | \
+              grep "ghcr.io/$IMAGE_NAME_LOWER" | \
               tail -n +4 | \
               awk '{print $1":"$2}' | \
               xargs -r docker rmi || true

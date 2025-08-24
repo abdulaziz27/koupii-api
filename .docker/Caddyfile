@@ -12,9 +12,14 @@
 :80 {
   root * /app/public
 
-  php_server {
-    # Enable worker mode with request limits to prevent memory leaks
-    # worker_max_requests 5000
+  # Handle all requests with PHP
+  handle {
+    php_server
+  }
+
+  # Serve static files
+  handle {
+    file_server
   }
 
   # Enable compression

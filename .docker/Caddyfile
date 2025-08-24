@@ -11,21 +11,18 @@
 # Main application
 :80 {
   root * /app/public
-  encode zstd gzip
+
+  php_server {
+    # Enable worker mode with request limits to prevent memory leaks
+    # worker_max_requests 5000
+  }
+
+  # Enable compression
+  encode zstd br gzip
 
   # Logging
   log {
     output file /app/storage/logs/frankenphp.access.log
     format json
-  }
-
-  # Handle all requests with PHP
-  handle {
-    php_server
-  }
-
-  # Serve static files
-  handle {
-    file_server
   }
 }

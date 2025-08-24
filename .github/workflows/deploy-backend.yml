@@ -144,6 +144,40 @@ jobs:
             cat > docker-compose.yml <<EOF
             # Production Docker Compose for Koupii API
             services:
+              db:
+                image: mysql:8.0
+                container_name: koupii-api-db
+                restart: unless-stopped
+                environment:
+                  MYSQL_DATABASE: \${DB_DATABASE}
+                  MYSQL_USER: \${DB_USERNAME}
+                  MYSQL_PASSWORD: \${DB_PASSWORD}
+                  MYSQL_ROOT_PASSWORD: \${DB_ROOT_PASSWORD:-rootpass}
+                volumes:
+                  - ./mysql-data:/var/lib/mysql
+                networks: ["koupii-network"]
+                healthcheck:
+                  test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p\${DB_ROOT_PASSWORD:-rootpass}"]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 10
+                  start_period: 30s
+
+              redis:
+                image: redis:7-alpine
+                container_name: koupii-api-redis
+                restart: unless-stopped
+                command: redis-server --appendonly yes
+                volumes:
+                  - ./redis-data:/data
+                networks: ["koupii-network"]
+                healthcheck:
+                  test: ["CMD", "redis-cli", "ping"]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 5
+                  start_period: 10s
+
               app:
                 image: $IMAGE
                 container_name: koupii-api-app
@@ -155,15 +189,23 @@ jobs:
                 environment:
                   - CONTAINER_ROLE=app
                   - FRANKENPHP_WORKERS=4
+                  - DB_HOST=db
+                  - REDIS_HOST=redis
+                  - RUN_MIGRATIONS=true
                 volumes:
                   - ./storage:/app/storage
                   - ./bootstrap-cache:/app/bootstrap/cache
+                depends_on:
+                  db:
+                    condition: service_healthy
+                  redis:
+                    condition: service_healthy
                 healthcheck:
                   test: ["CMD-SHELL", "wget -qO- http://localhost:8080/api/health >/dev/null 2>&1 || exit 1"]
                   interval: 30s
                   timeout: 10s
                   retries: 3
-                  start_period: 60s
+                  start_period: 90s
                 networks: ["koupii-network"]
 
               queue:
@@ -171,7 +213,10 @@ jobs:
                 container_name: koupii-api-queue
                 restart: unless-stopped
                 env_file: [".env"]
-                environment: ["CONTAINER_ROLE=queue"]
+                environment: 
+                  - CONTAINER_ROLE=queue
+                  - DB_HOST=db
+                  - REDIS_HOST=redis
                 command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
                 volumes:
                   - ./storage:/app/storage
@@ -186,7 +231,10 @@ jobs:
                 container_name: koupii-api-scheduler
                 restart: unless-stopped
                 env_file: [".env"]
-                environment: ["CONTAINER_ROLE=scheduler"]
+                environment: 
+                  - CONTAINER_ROLE=scheduler
+                  - DB_HOST=db
+                  - REDIS_HOST=redis
                 command: php artisan schedule:work
                 volumes:
                   - ./storage:/app/storage
@@ -208,8 +256,19 @@ jobs:
             # Create required directories with proper permissions
             echo "Creating required directories..."
             mkdir -p storage/app/public storage/framework/{cache,sessions,views} storage/logs bootstrap-cache
+            mkdir -p mysql-data redis-data
             sudo chown -R 1000:1000 storage bootstrap-cache
-            sudo chmod -R 775 storage bootstrap-cache
+            sudo chmod -R 775 storage bootstrap-cache mysql-data redis-data
+            
+            # Update .env to use containerized database
+            echo "Updating .env for containerized services..."
+            sed -i 's/DB_HOST=127.0.0.1/DB_HOST=db/' .env
+            sed -i 's/REDIS_HOST=127.0.0.1/REDIS_HOST=redis/' .env
+            
+            # Add DB_ROOT_PASSWORD if not exists
+            if ! grep -q "DB_ROOT_PASSWORD" .env; then
+              echo "DB_ROOT_PASSWORD=rootpass" >> .env
+            fi
 
             # Pull and deploy
             echo "Pulling Docker images..."

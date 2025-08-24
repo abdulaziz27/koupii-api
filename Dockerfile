@@ -142,7 +142,11 @@ fi
 # Debug: Show environment and config
 echo "=== Container Debug Info ==="
 echo "APP_ENV: $APP_ENV"
-echo "APP_KEY: ${APP_KEY:0:10}..." # Show only first 10 chars for security
+if [ -n "$APP_KEY" ]; then
+    echo "APP_KEY: $(echo "$APP_KEY" | cut -c1-10)..."
+else
+    echo "APP_KEY: (not set)"
+fi
 echo "DB_CONNECTION: $DB_CONNECTION"
 echo "DB_HOST: $DB_HOST"
 echo "Starting FrankenPHP on port 8080..."
@@ -163,10 +167,10 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:8080/api/health || exit 1
+    CMD curl -f http://localhost:80/api/health || exit 1
 
 # Set entrypoint and default command
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-# Start FrankenPHP with worker mode on explicit port
-CMD ["frankenphp", "run", "--listen", ":8080", "--config", "/app/.frankenphp.php"]
+# Start FrankenPHP with worker mode (default port 80)
+CMD ["frankenphp", "run", "--config", "/app/.frankenphp.php"]

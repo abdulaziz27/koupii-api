@@ -186,8 +186,8 @@ jobs:
                 image: $IMAGE
                 container_name: koupii-api-app
                 restart: unless-stopped
-                ports:
-                  - "127.0.0.1:8081:8080"
+                            ports:
+              - "127.0.0.1:8081:80"
                 env_file:
                   - ./.env
                 environment:
@@ -205,11 +205,11 @@ jobs:
                   redis:
                     condition: service_healthy
                 healthcheck:
-                  test: ["CMD-SHELL", "(curl -fsS http://localhost:8080/api/health || wget -qO- http://localhost:8080/api/health || busybox wget -qO- http://localhost:8080/api/health) >/dev/null 2>&1 || exit 1"]
+                  test: ["CMD-SHELL", "curl -fsS http://localhost:80/api/health >/dev/null 2>&1 || exit 1"]
                   interval: 30s
                   timeout: 10s
-                  retries: 5
-                  start_period: 120s
+                  retries: 8
+                  start_period: 150s
                 networks: ["koupii-network"]
 
               queue:
@@ -261,8 +261,16 @@ jobs:
             echo "Creating required directories..."
             mkdir -p storage/app/public storage/framework/{cache,sessions,views} storage/logs bootstrap-cache
             mkdir -p mysql-data redis-data
+
+            # Fix MySQL volume permissions (mysql:8 runs as uid 999)
+            echo "Fixing MySQL volume permissions..."
+            sudo chown -R 999:999 mysql-data
+            sudo find mysql-data -type d -exec chmod 750 {} \;
+            sudo find mysql-data -type f -exec chmod 640 {} \;
+
+            # Fix Laravel storage permissions
             sudo chown -R 1000:1000 storage bootstrap-cache
-            sudo chmod -R 775 storage bootstrap-cache mysql-data redis-data
+            sudo chmod -R 775 storage bootstrap-cache
 
             # Update .env to use containerized database
             echo "Updating .env for containerized services..."

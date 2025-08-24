@@ -8,8 +8,9 @@
   root * /app/public
   encode zstd gzip
 
-  route {
-    php_server
-    file_server
-  }
+  # Handle all requests with PHP first
+  php_server
+
+  # Fallback to static files
+  file_server
 }

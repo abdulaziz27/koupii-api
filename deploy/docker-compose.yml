@@ -1,0 +1,72 @@
+# Production Docker Compose for Koupii API
+
+services:
+    app:
+        image: ghcr.io/GITHUB_USERNAME/koupii-api:${GITHUB_SHA:-latest}
+        container_name: koupii-api-app
+        restart: unless-stopped
+        ports:
+            - "127.0.0.1:8081:8080"
+        env_file:
+            - ./.env
+        environment:
+            - CONTAINER_ROLE=app
+            - FRANKENPHP_WORKERS=4
+        volumes:
+            - ./storage:/app/storage
+            - ./bootstrap-cache:/app/bootstrap/cache
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 60s
+        networks:
+            - koupii-network
+
+    queue:
+        image: ghcr.io/GITHUB_USERNAME/koupii-api:${GITHUB_SHA:-latest}
+        container_name: koupii-api-queue
+        restart: unless-stopped
+        env_file:
+            - ./.env
+        environment:
+            - CONTAINER_ROLE=queue
+        command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+        volumes:
+            - ./storage:/app/storage
+            - ./bootstrap-cache:/app/bootstrap/cache
+        depends_on:
+            app:
+                condition: service_healthy
+        networks:
+            - koupii-network
+
+    scheduler:
+        image: ghcr.io/GITHUB_USERNAME/koupii-api:${GITHUB_SHA:-latest}
+        container_name: koupii-api-scheduler
+        restart: unless-stopped
+        env_file:
+            - ./.env
+        environment:
+            - CONTAINER_ROLE=scheduler
+        command: php artisan schedule:work
+        volumes:
+            - ./storage:/app/storage
+            - ./bootstrap-cache:/app/bootstrap/cache
+        depends_on:
+            app:
+                condition: service_healthy
+        networks:
+            - koupii-network
+
+networks:
+    koupii-network:
+        driver: bridge
+        name: koupii-network
+
+volumes:
+    storage:
+        driver: local
+    bootstrap-cache:
+        driver: local

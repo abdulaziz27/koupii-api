@@ -1,0 +1,95 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Development files
+.git/
+.github/
+.gitignore
+.gitattributes
+
+# Environment files
+.env*
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing
+tests/
+phpunit.xml
+.phpunit.result.cache
+coverage/
+
+# Development tools
+.php-cs-fixer.cache
+.php_cs.cache
+.phpcs.xml
+.phpmd.xml
+pint.json
+
+# Build artifacts
+dist/
+build/
+
+# Documentation
+README.md
+CHANGELOG.md
+docs/
+
+# Logs
+*.log
+logs/
+storage/logs/*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Cache files (will be generated in container)
+bootstrap/cache/*.php
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Uploaded files (will be handled via volumes)
+storage/app/public/*
+
+# Package files
+*.tar.gz
+*.zip
+*.rar
+
+# Docker files
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+
+# Deployment files
+deploy/
+
+# NPM/Yarn
+package-lock.json
+yarn.lock
+.npm/
+.yarn/
+
+# Laravel specific
+storage/debugbar/
+.phpstorm.meta.php
+_ide_helper.php
+_ide_helper_models.php
+
+# Backup files
+*.bak
+*.backup

@@ -186,8 +186,8 @@ jobs:
                 image: $IMAGE
                 container_name: koupii-api-app
                 restart: unless-stopped
-                            ports:
-              - "127.0.0.1:8081:80"
+                ports:
+                  - "127.0.0.1:8081:80"
                 env_file:
                   - ./.env
                 environment:
@@ -196,6 +196,7 @@ jobs:
                   - DB_HOST=db
                   - REDIS_HOST=redis
                   - RUN_MIGRATIONS=true
+                  - CLEAR_CACHE=true
                 volumes:
                   - ./storage:/app/storage
                   - ./bootstrap-cache:/app/bootstrap/cache
@@ -253,6 +254,10 @@ jobs:
                 external: true
                 name: koupii-network
             EOF
+
+            # Validate docker-compose.yml syntax
+            echo "Validating docker-compose.yml syntax..."
+            docker compose config
 
             # Check if .env exists
             [ -f .env ] || { echo "ERROR: $APP_DIR/.env not found"; exit 1; }

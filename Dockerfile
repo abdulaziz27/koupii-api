@@ -162,8 +162,8 @@ RUN chmod +x /app/entrypoint.sh
 # Switch to non-root user
 USER www
 
-# Expose port 8080 (FrankenPHP default)
-EXPOSE 8080
+# Expose port 80 (FrankenPHP default)
+EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

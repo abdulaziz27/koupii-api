@@ -272,7 +272,12 @@ jobs:
             sudo chown -R 999:999 mysql-data
             sudo find mysql-data -type d -exec chmod 750 {} \;
             sudo find mysql-data -type f -exec chmod 640 {} \;
-            
+
+            # Reset MySQL database (development environment)
+            echo "Resetting MySQL database for clean deployment..."
+            sudo rm -rf mysql-data/*
+            sudo mkdir -p mysql-data
+
             # Remove corrupted redo log directory (safe when MySQL is stopped)
             echo "Cleaning up MySQL redo log directory..."
             sudo rm -rf mysql-data/#innodb_redo || true
@@ -300,6 +305,22 @@ jobs:
             # Pull and deploy
             echo "Pulling Docker images..."
             docker compose pull
+
+            # Start database first and wait for it to be healthy
+            echo "Starting database first..."
+            docker compose up -d db
+            echo "Waiting for database to be healthy..."
+            timeout=60
+            count=0
+            while ! docker compose ps db | grep -q "healthy"; do
+                if [ $count -ge $timeout ]; then
+                    echo "Database health check timeout, continuing anyway..."
+                    break
+                fi
+                echo "Database not ready, waiting 2 seconds... ($count/$timeout)"
+                sleep 2
+                count=$((count + 1))
+            done
 
             echo "Deploying application..."
             docker compose up -d --remove-orphans

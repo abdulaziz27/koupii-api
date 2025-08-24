@@ -1,15 +1,15 @@
 {
   admin off
   auto_https off
+  order php_server before file_server
 }
 
 :80 {
   root * /app/public
   encode zstd gzip
 
-  # Menjalankan aplikasi Laravel via FrankenPHP
-  php_server
-
-  # Static file server untuk aset publik
-  file_server
+  route {
+    php_server
+    file_server
+  }
 }

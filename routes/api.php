@@ -44,10 +44,8 @@ use App\Http\Controllers\ClassInvitationController;
  */
 Route::get('/test', [\App\Http\Controllers\SwaggerTestController::class, 'test']);
 
-// Health check endpoint for Docker
-Route::get('/health', function () {
-    return response()->json(['status' => 'OK', 'timestamp' => now()]);
-});
+// Health check endpoint for Docker (no DB dependency)
+Route::get('/health', fn() => response()->json(['ok' => true, 'time' => time()]));
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);

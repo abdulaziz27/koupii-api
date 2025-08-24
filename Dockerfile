@@ -32,13 +32,7 @@ ENV APP_ENV=production \
     SESSION_DRIVER=array \
     QUEUE_CONNECTION=sync
 
-# Create dummy database for caching commands
-RUN touch /tmp/dummy.sqlite
-
-# Cache Laravel configurations, routes, and views
-RUN php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
+# Skip config cache at build time - will be done at runtime with proper .env
 
 # Stage 2: Final production image with FrankenPHP
 FROM dunglas/frankenphp:latest-php8.3
@@ -145,6 +139,16 @@ if [ -d "/app/bootstrap/cache" ] && [ -w "/app/bootstrap/cache" ]; then
     chown -R www:www /app/bootstrap/cache 2>/dev/null || true
 fi
 
+# Debug: Show environment and config
+echo "=== Container Debug Info ==="
+echo "APP_ENV: $APP_ENV"
+echo "APP_KEY: ${APP_KEY:0:10}..." # Show only first 10 chars for security
+echo "DB_CONNECTION: $DB_CONNECTION"
+echo "DB_HOST: $DB_HOST"
+echo "Starting FrankenPHP on port 8080..."
+echo "FrankenPHP config:"
+cat /app/.frankenphp.php || echo "No FrankenPHP config found"
+
 # Execute the main command
 exec "$@"
 EOF
@@ -164,5 +168,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
 # Set entrypoint and default command
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-# Start FrankenPHP with worker mode
-CMD ["frankenphp", "run", "--config", "/app/.frankenphp.php"]
+# Start FrankenPHP with worker mode on explicit port
+CMD ["frankenphp", "run", "--listen", ":8080", "--config", "/app/.frankenphp.php"]

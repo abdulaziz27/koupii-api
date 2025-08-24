@@ -60,6 +60,7 @@ services:
             - DB_HOST=db
             - REDIS_HOST=redis
             - RUN_MIGRATIONS=true
+            - CLEAR_CACHE=true
         volumes:
             - ./storage:/app/storage
             - ./bootstrap-cache:/app/bootstrap/cache
@@ -72,7 +73,7 @@ services:
             test:
                 [
                     "CMD-SHELL",
-                    "(curl -fsS http://localhost:8080/api/health || wget -qO- http://localhost:8080/api/health || busybox wget -qO- http://localhost:8080/api/health) >/dev/null 2>&1 || exit 1",
+                    "curl -f http://localhost:8080/api/health || exit 1",
                 ]
             interval: 30s
             timeout: 10s

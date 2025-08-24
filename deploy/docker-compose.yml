@@ -2,7 +2,7 @@
 
 services:
     app:
-        image: ghcr.io/GITHUB_USERNAME/koupii-api:${GITHUB_SHA:-latest}
+        image: ghcr.io/abdulaziz27/koupii-api:${GITHUB_SHA:-latest}
         container_name: koupii-api-app
         restart: unless-stopped
         ports:
@@ -25,7 +25,7 @@ services:
             - koupii-network
 
     queue:
-        image: ghcr.io/GITHUB_USERNAME/koupii-api:${GITHUB_SHA:-latest}
+        image: ghcr.io/abdulaziz27/koupii-api:${GITHUB_SHA:-latest}
         container_name: koupii-api-queue
         restart: unless-stopped
         env_file:
@@ -43,7 +43,7 @@ services:
             - koupii-network
 
     scheduler:
-        image: ghcr.io/GITHUB_USERNAME/koupii-api:${GITHUB_SHA:-latest}
+        image: ghcr.io/abdulaziz27/koupii-api:${GITHUB_SHA:-latest}
         container_name: koupii-api-scheduler
         restart: unless-stopped
         env_file:

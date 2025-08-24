@@ -100,8 +100,9 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           REGISTRY_USERNAME: ${{ github.actor }}
-          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN || secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -109,7 +110,7 @@ jobs:
           port: ${{ secrets.VPS_PORT || 22 }}
           timeout: 300s
           command_timeout: 600s
-          envs: GITHUB_SHA,REGISTRY_USERNAME,REGISTRY_TOKEN
+          envs: GITHUB_SHA,GITHUB_REPOSITORY,REGISTRY_USERNAME,REGISTRY_TOKEN
           script: |
             set -e
 
@@ -131,12 +132,12 @@ jobs:
             echo "Deploying commit: $GITHUB_SHA"
             echo "Timestamp: $(date)"
 
-            # Create docker-compose.yml if it doesn't exist or update it
-            cat > docker-compose.yml << 'EOF'
+            # Create docker-compose.yml with proper variable substitution
+            cat > docker-compose.yml << EOF
             # Production Docker Compose for Koupii API
             services:
               app:
-                image: ghcr.io/${{ github.repository }}:${GITHUB_SHA:-latest}
+                image: ghcr.io/${GITHUB_REPOSITORY}:\${GITHUB_SHA:-latest}
                 container_name: koupii-api-app
                 restart: unless-stopped
                 ports:
@@ -159,7 +160,7 @@ jobs:
                   - koupii-network
 
               queue:
-                image: ghcr.io/${{ github.repository }}:${GITHUB_SHA:-latest}
+                image: ghcr.io/${GITHUB_REPOSITORY}:\${GITHUB_SHA:-latest}
                 container_name: koupii-api-queue
                 restart: unless-stopped
                 env_file:
@@ -177,7 +178,7 @@ jobs:
                   - koupii-network
 
               scheduler:
-                image: ghcr.io/${{ github.repository }}:${GITHUB_SHA:-latest}
+                image: ghcr.io/${GITHUB_REPOSITORY}:\${GITHUB_SHA:-latest}
                 container_name: koupii-api-scheduler
                 restart: unless-stopped
                 env_file:
@@ -274,7 +275,7 @@ jobs:
 
             # Keep only last 3 versions
             docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.CreatedAt}}" | \
-              grep "ghcr.io/${{ github.repository }}" | \
+              grep "ghcr.io/${GITHUB_REPOSITORY}" | \
               tail -n +4 | \
               awk '{print $1":"$2}' | \
               xargs -r docker rmi || true
@@ -303,7 +304,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          image-ref: ghcr.io/${{ github.repository }}:${{ github.sha }}
           format: "sarif"
           output: "trivy-results.sarif"
 

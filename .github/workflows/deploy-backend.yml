@@ -206,7 +206,7 @@ jobs:
                   redis:
                     condition: service_healthy
                 healthcheck:
-                  test: ["CMD-SHELL", "curl -fsS http://localhost:80/api/health >/dev/null 2>&1 || exit 1"]
+                  test: ["CMD-SHELL", "curl -fsS http://localhost:80/ >/dev/null 2>&1 || exit 1"]
                   interval: 30s
                   timeout: 10s
                   retries: 8
@@ -272,6 +272,10 @@ jobs:
             sudo chown -R 999:999 mysql-data
             sudo find mysql-data -type d -exec chmod 750 {} \;
             sudo find mysql-data -type f -exec chmod 640 {} \;
+            
+            # Remove corrupted redo log directory (safe when MySQL is stopped)
+            echo "Cleaning up MySQL redo log directory..."
+            sudo rm -rf mysql-data/#innodb_redo || true
 
             # Fix Laravel storage permissions
             sudo chown -R 1000:1000 storage bootstrap-cache

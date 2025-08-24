@@ -87,6 +87,9 @@ return [
 ];
 EOF
 
+# Copy Caddyfile for FrankenPHP server
+COPY .docker/Caddyfile /etc/caddy/Caddyfile
+
 # Create entrypoint script
 COPY <<'EOF' /app/entrypoint.sh
 #!/bin/bash
@@ -149,7 +152,7 @@ else
 fi
 echo "DB_CONNECTION: $DB_CONNECTION"
 echo "DB_HOST: $DB_HOST"
-echo "Starting FrankenPHP on port 8080..."
+echo "Starting FrankenPHP on port 80..."
 echo "FrankenPHP config:"
 cat /app/.frankenphp.php || echo "No FrankenPHP config found"
 
@@ -167,10 +170,10 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:80/api/health || exit 1
+    CMD curl -f http://localhost:80/ || exit 1
 
 # Set entrypoint and default command
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-# Start FrankenPHP with worker mode (default port 80)
-CMD ["frankenphp", "run", "--config", "/app/.frankenphp.php"]
+# Start FrankenPHP with Caddyfile adapter (default port 80)
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

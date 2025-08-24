@@ -1,16 +1,27 @@
 {
   admin off
   auto_https off
-  order php_server before file_server
 }
 
+# Health check endpoint
+:80/health {
+  respond "OK" 200
+}
+
+# Main application
 :80 {
   root * /app/public
   encode zstd gzip
 
-  # Handle all requests with PHP first
+  # Logging
+  log {
+    output file /app/storage/logs/frankenphp.access.log
+    format json
+  }
+
+  # Handle PHP files
   php_server
 
-  # Fallback to static files
+  # Serve static files
   file_server
 }

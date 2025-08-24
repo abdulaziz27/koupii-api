@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json(['status' => 'OK', 'message' => 'Koupii API is running', 'timestamp' => now()]);
 });
 
 /**

@@ -90,6 +90,9 @@ EOF
 # Copy Caddyfile for FrankenPHP server
 COPY .docker/Caddyfile /etc/caddy/Caddyfile
 
+# Copy production php.ini
+COPY .docker/php.ini /usr/local/etc/php/php.ini
+
 # Create entrypoint script
 COPY <<'EOF' /app/entrypoint.sh
 #!/bin/bash
@@ -134,6 +137,9 @@ if [ "$CLEAR_CACHE" = "true" ]; then
     php artisan view:cache || true
 fi
 
+# Create log directories
+mkdir -p /app/storage/logs 2>/dev/null || true
+
 # Fix permissions (if directories exist and are writable)
 if [ -d "/app/storage" ] && [ -w "/app/storage" ]; then
     chown -R www:www /app/storage 2>/dev/null || true
@@ -170,7 +176,7 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:80/ || exit 1
+    CMD curl -f http://localhost:80/health || exit 1
 
 # Set entrypoint and default command
 ENTRYPOINT ["/app/entrypoint.sh"]

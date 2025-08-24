@@ -206,7 +206,7 @@ jobs:
                   redis:
                     condition: service_healthy
                 healthcheck:
-                  test: ["CMD-SHELL", "curl -fsS http://localhost:80/ >/dev/null 2>&1 || exit 1"]
+                                      test: ["CMD-SHELL", "curl -fsS http://localhost:80/health >/dev/null 2>&1 || exit 1"]
                   interval: 30s
                   timeout: 10s
                   retries: 8
@@ -328,7 +328,7 @@ jobs:
             # Health check from host
             echo "Performing health check..."
             for i in {1..30}; do
-              if curl -fsS http://127.0.0.1:8081/api/health >/dev/null 2>&1; then
+              if curl -fsS http://127.0.0.1:8081/health >/dev/null 2>&1; then
                 echo "✅ Health check passed!"
                 break
               fi

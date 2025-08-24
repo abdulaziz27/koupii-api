@@ -98,38 +98,52 @@ COPY <<'EOF' /app/entrypoint.sh
 #!/bin/bash
 set -e
 
-# Generate APP_KEY if not set
-if [ -z "$APP_KEY" ]; then
+# Generate APP_KEY if not set and .env is writable
+if [ -z "$APP_KEY" ] && [ -w "/app/.env" ]; then
     echo "Generating APP_KEY..."
     php artisan key:generate --no-interaction
+elif [ -z "$APP_KEY" ]; then
+    echo "Warning: APP_KEY not set and .env is not writable"
 fi
 
-# Wait for database connection if needed
-if [ "$DB_CONNECTION" != "sqlite" ]; then
+# Wait for database connection if needed (with timeout)
+if [ "$DB_CONNECTION" != "sqlite" ] && [ "$DB_CONNECTION" != "array" ]; then
     echo "Waiting for database connection..."
+    timeout=60
+    count=0
     until php artisan migrate:status > /dev/null 2>&1; do
-        echo "Database not ready, waiting 5 seconds..."
-        sleep 5
+        if [ $count -ge $timeout ]; then
+            echo "Database connection timeout after ${timeout}s, continuing anyway..."
+            break
+        fi
+        echo "Database not ready, waiting 2 seconds... ($count/$timeout)"
+        sleep 2
+        count=$((count + 1))
     done
 fi
 
-# Run migrations if needed
+# Run migrations if needed (with error handling)
 if [ "$RUN_MIGRATIONS" = "true" ]; then
     echo "Running database migrations..."
-    php artisan migrate --force --no-interaction
+    php artisan migrate --force --no-interaction || echo "Migration failed, continuing..."
 fi
 
 # Clear and rebuild caches if needed
 if [ "$CLEAR_CACHE" = "true" ]; then
     echo "Clearing application caches..."
-    php artisan cache:clear
-    php artisan config:cache
-    php artisan route:cache
-    php artisan view:cache
+    php artisan cache:clear || true
+    php artisan config:cache || true
+    php artisan route:cache || true
+    php artisan view:cache || true
 fi
 
-# Fix permissions
-chown -R www:www /app/storage /app/bootstrap/cache
+# Fix permissions (if directories exist and are writable)
+if [ -d "/app/storage" ] && [ -w "/app/storage" ]; then
+    chown -R www:www /app/storage 2>/dev/null || true
+fi
+if [ -d "/app/bootstrap/cache" ] && [ -w "/app/bootstrap/cache" ]; then
+    chown -R www:www /app/bootstrap/cache 2>/dev/null || true
+fi
 
 # Execute the main command
 exec "$@"

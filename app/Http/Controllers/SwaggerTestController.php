@@ -4,21 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-/**
- * @OA\Info(
- *     version="1.0.0",
- *     title="Koupii LMS API",
- *     description="API documentation for English course LMS",
- *     @OA\Contact(
- *         email="support@koupii.com"
- *     )
- * )
- *
- * @OA\Server(
- *     url="http://127.0.0.1:8000",
- *     description="Local server"
- * )
- */
 class SwaggerTestController extends Controller
 {
     /**

@@ -11,40 +11,6 @@ use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ClassEnrollmentController;
 use App\Http\Controllers\ClassInvitationController;
 
-/**
- * @OA\Info(
- *     version="1.0.0",
- *     title="Koupii LMS API",
- *     description="API documentation for English course LMS",
- *     @OA\Contact(
- *         email="support@koupii.com"
- *     )
- * )
- *
- * @OA\Server(
- *     url="http://localhost:8000",
- *     description="Local server"
- * )
- */
-
-/**
- * @OA\Get(
- *     path="/api/test",
- *     summary="Test endpoint",
- *     tags={"Test"},
- *     @OA\Response(
- *         response=200,
- *         description="Success",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="message", type="string", example="API is working!")
- *         )
- *     )
- * )
- */
-Route::get('/test', [\App\Http\Controllers\SwaggerTestController::class, 'test']);
-
-// Health check endpoint for Docker
 Route::get('/health', fn() => response()->json(['ok' => true, 'time' => time()]));
 
 Route::prefix('auth')->group(function () {

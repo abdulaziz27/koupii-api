@@ -10,8 +10,8 @@
     },
     "servers": [
         {
-            "url": "http://127.0.0.1:8000",
-            "description": "Local server"
+            "url": "https://api-koupii.magercoding.com",
+            "description": "Production server"
         }
     ],
     "paths": {
@@ -2251,33 +2251,6 @@
                 ]
             }
         },
-        "/api/test": {
-            "get": {
-                "tags": [
-                    "Test"
-                ],
-                "summary": "Test endpoint",
-                "operationId": "28e36defdc583280e27438fb4d5ab803",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "API is working!"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/profile/{id}": {
             "get": {
                 "tags": [
@@ -3792,10 +3765,6 @@
         {
             "name": "Password",
             "description": "Password"
-        },
-        {
-            "name": "Test",
-            "description": "Test"
         },
         {
             "name": "Profile",

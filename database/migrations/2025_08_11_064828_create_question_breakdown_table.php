@@ -24,11 +24,8 @@ return new class extends Migration
         Schema::create('highlight_segments', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('breakdown_id');
-            $table->enum('passage_type', ['reading','listening']);
             $table->integer('start_char_index')->nullable();
             $table->integer('end_char_index')->nullable();
-            $table->decimal('start_time_seconds', 8, 3)->nullable();
-            $table->decimal('end_time_seconds', 8, 3)->nullable();
             $table->timestamps();
 
             $table->foreign('breakdown_id')->references('id')->on('question_breakdowns')->cascadeOnDelete();

@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $difficulty
  * @property string $title
  * @property string|null $description
+ * @property string $test_type
  * @property string|null $timer_mode
  * @property array|null $timer_settings
  * @property bool $allow_repetition
@@ -37,6 +38,7 @@ class Test extends Model
         'difficulty',
         'title',
         'description',
+        'test_type',
         'timer_mode',
         'timer_settings',
         'allow_repetition',

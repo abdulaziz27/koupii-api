@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('tests', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('creator_id');
-            $table->enum('type', ['reading','listening','speaking','writing']);
             $table->enum('difficulty', ['beginner','intermediate','advanced'])->default('beginner');
             $table->string('title');
             $table->text('description')->nullable();
+            $table->enum('type', ['reading','listening','speaking','writing']);
+            $table->enum('test_type', ['single', 'final'])->default('single');
             $table->enum('timer_mode', ['countdown', 'countup', 'none'])->default('none');
             $table->json('timer_settings')->nullable();
             $table->boolean('allow_repetition')->default(false);
@@ -46,7 +47,6 @@ return new class extends Migration
         Schema::create('question_groups', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('passage_id');
-            $table->string('question_type');
             $table->text('instruction')->nullable();
             $table->timestamps();
 
@@ -56,7 +56,8 @@ return new class extends Migration
         Schema::create('test_questions', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->uuid('question_group_id');
-            $table->integer('question_number')->nullable();
+            $table->string('question_type');
+            $table->float('question_number')->nullable();
             $table->text('question_text')->nullable();
             $table->json('question_data')->nullable();
             $table->json('correct_answers')->nullable();
@@ -71,8 +72,6 @@ return new class extends Migration
             $table->uuid('question_id');
             $table->string('option_key')->nullable();
             $table->text('option_text')->nullable();
-            $table->boolean('is_correct')->default(false);
-            $table->integer('display_order')->nullable();
             $table->timestamps();
 
             $table->foreign('question_id')->references('id')->on('test_questions')->cascadeOnDelete();

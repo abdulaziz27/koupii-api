@@ -11,8 +11,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $question_id
  * @property string|null $option_key
  * @property string|null $option_text
- * @property bool $is_correct
- * @property int|null $display_order
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  */
@@ -28,12 +26,6 @@ class QuestionOption extends Model
         'question_id',
         'option_key',
         'option_text',
-        'is_correct',
-        'display_order',
-    ];
-
-    protected $casts = [
-        'is_correct' => 'boolean',
     ];
 
     public function question()

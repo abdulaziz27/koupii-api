@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $question_group_id
- * @property int|null $question_number
+ * @property string $question_type
+ * @property float|null $question_number
  * @property string|null $question_text
  * @property array|null $question_data
  * @property array|null $correct_answers
@@ -27,6 +28,7 @@ class TestQuestion extends Model
 
     protected $fillable = [
         'question_group_id',
+        'question_type',
         'question_number',
         'question_text',
         'question_data',
@@ -35,6 +37,7 @@ class TestQuestion extends Model
     ];
 
     protected $casts = [
+        'question_number' => 'float',
         'question_data' => 'array',
         'correct_answers' => 'array',
         'points_value' => 'float',
@@ -42,7 +45,7 @@ class TestQuestion extends Model
 
     public function questionGroup()
     {
-        return $this->belongsTo(QuestionGroup::class, 'question_group_id');
+        return $this->belongsTo(QuestionGroup::class, 'question_group_id', 'id');
     }
 
     public function options()

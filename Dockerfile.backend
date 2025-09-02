@@ -38,6 +38,12 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
+# Debug: Check what files were copied
+RUN ls -la /var/www/html
+RUN pwd
+RUN echo "=== Checking for composer.json ==="
+RUN find /var/www/html -name "composer.json" -type f
+
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 

@@ -1,4 +1,4 @@
-# Docker ignore file - ensure correct build context
+# Docker ignore - minimal exclusions
 .git
 .github
 node_modules
@@ -6,7 +6,6 @@ storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
 storage/framework/views/*
-vendor
 .env
 .env.*
 *.log

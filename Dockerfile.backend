@@ -6,14 +6,28 @@ RUN apk add --no-cache \
     git \
     curl \
     libpng-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
     libxml2-dev \
     zip \
     unzip \
     nginx \
-    supervisor
+    supervisor \
+    oniguruma-dev \
+    icu-dev \
+    libzip-dev
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Install PHP extensions with proper dependencies
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        pdo_mysql \
+        mbstring \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        intl \
+        zip
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

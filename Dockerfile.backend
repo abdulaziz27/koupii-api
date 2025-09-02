@@ -61,8 +61,26 @@ RUN mkdir -p /var/log/supervisor /var/run /etc/supervisor/conf.d
 # Create nginx configuration
 RUN echo 'events { worker_connections 1024; } http { include /etc/nginx/mime.types; default_type application/octet-stream; server { listen 80; server_name localhost; root /var/www/html/public; index index.php index.html; location / { try_files $uri $uri/ /index.php?$query_string; } location ~ \.php$ { fastcgi_pass 127.0.0.1:9000; fastcgi_index index.php; fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name; include fastcgi_params; } } }' > /etc/nginx/nginx.conf
 
-# Create supervisor configuration
-RUN echo '[supervisord]\nnodaemon=true\nuser=root\nlogfile=/var/log/supervisor/supervisord.log\npidfile=/var/run/supervisord.pid\n\n[program:php-fpm]\ncommand=php-fpm\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/supervisor/php-fpm.err.log\nstdout_logfile=/var/log/supervisor/php-fpm.out.log\n\n[program:nginx]\ncommand=nginx -g "daemon off;"\nautostart=true\nautorestart=true\nstderr_logfile=/var/log/supervisor/nginx.err.log\nstdout_logfile=/var/log/supervisor/nginx.out.log' > /etc/supervisor/conf.d/supervisord.conf
+# Create supervisor configuration with proper newlines
+RUN echo '[supervisord]' > /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'nodaemon=true' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'user=root' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'logfile=/var/log/supervisor/supervisord.log' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'pidfile=/var/run/supervisord.pid' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo '' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo '[program:php-fpm]' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'command=php-fpm' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'stderr_logfile=/var/log/supervisor/php-fpm.err.log' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'stdout_logfile=/var/log/supervisor/php-fpm.out.log' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo '' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo '[program:nginx]' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'command=nginx -g "daemon off;"' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'autostart=true' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'autorestart=true' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'stderr_logfile=/var/log/supervisor/nginx.err.log' >> /etc/supervisor/conf.d/supervisord.conf \
+    && echo 'stdout_logfile=/var/log/supervisor/nginx.out.log' >> /etc/supervisor/conf.d/supervisord.conf
 
 # Expose port
 EXPOSE 80

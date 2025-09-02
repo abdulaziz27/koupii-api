@@ -1,4 +1,5 @@
 # Docker ignore - exclude symlinks and create fresh directories
+# This file is used when building from ./current directory
 .git
 .github
 node_modules

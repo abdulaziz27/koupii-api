@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 /**
  * @property string $id
  * @property string $passage_id
- * @property string $question_type
  * @property string|null $instruction
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
@@ -24,12 +23,7 @@ class QuestionGroup extends Model
 
     protected $fillable = [
         'passage_id',
-        'question_type',
         'instruction',
-    ];
-
-    protected $casts = [
-        'question_type' => 'string',
     ];
 
     public function passage()
@@ -39,6 +33,6 @@ class QuestionGroup extends Model
 
     public function questions()
     {
-        return $this->hasMany(TestQuestion::class, 'question_group_id');
+        return $this->hasMany(TestQuestion::class, 'question_group_id', 'id');
     }
 }

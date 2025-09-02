@@ -10,6 +10,7 @@ use App\Http\Controllers\VocabularyController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\ClassEnrollmentController;
 use App\Http\Controllers\ClassInvitationController;
+use App\Http\Controllers\ReadingTestQuestionController;
 
 Route::get('/health', fn() => response()->json(['ok' => true, 'time' => time()]));
 
@@ -81,7 +82,7 @@ Route::middleware('auth:sanctum')
         });
     });
 
-Route::middleware(['auth:sanctum'])
+Route::middleware('auth:sanctum')
     ->prefix('invitations')
     ->group(function () {
         Route::get('/', [ClassInvitationController::class, 'index']);
@@ -91,3 +92,18 @@ Route::middleware(['auth:sanctum'])
             Route::delete('/delete/{id}', [ClassInvitationController::class, 'destroy'])->middleware('role:admin,teacher');
         });
     });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::prefix('reading')
+        ->group(function () {
+            Route::get('/tests', [ReadingTestQuestionController::class, 'index']);
+            Route::get('/tests/{id}', [ReadingTestQuestionController::class, 'show']);
+            Route::middleware(['role:admin,teacher'])->group(function () {
+                Route::post('/create', [ReadingTestQuestionController::class, 'store']);
+                Route::patch('/update/{id}', [ReadingTestQuestionController::class, 'update']);
+                Route::delete('/delete/passage/{passageId}', [ReadingTestQuestionController::class, 'deletePassage']);
+                Route::delete('/delete/question/{questionId}', [ReadingTestQuestionController::class, 'deleteQuestion']);
+                Route::delete('/delete/{id}', [ReadingTestQuestionController::class, 'destroy']);
+            });
+        });
+});

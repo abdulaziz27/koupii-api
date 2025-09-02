@@ -38,17 +38,21 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
-# Create all necessary Laravel directories with proper permissions
-RUN mkdir -p storage/logs storage/framework/cache storage/framework/sessions storage/framework/views \
+# Create Laravel storage structure (since symlinks don't work in Docker)
+RUN mkdir -p storage/app/public \
+    && mkdir -p storage/framework/cache/data \
+    && mkdir -p storage/framework/sessions \
+    && mkdir -p storage/framework/views \
+    && mkdir -p storage/logs \
     && mkdir -p bootstrap/cache \
     && chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Install dependencies without running post-autoload scripts
+# Install dependencies (skip scripts to avoid storage issues)
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
-# Run package discovery separately
+# Run package discovery separately with error handling
 RUN php artisan package:discover --ansi || true
 
 # Create necessary directories FIRST

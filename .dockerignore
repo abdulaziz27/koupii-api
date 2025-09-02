@@ -1,11 +1,9 @@
-# Docker ignore - minimal exclusions
+# Docker ignore - exclude symlinks and create fresh directories
 .git
 .github
 node_modules
-storage/logs/*.log
-storage/framework/cache/data/*
-storage/framework/sessions/*
-storage/framework/views/*
+storage
+bootstrap/cache
 .env
 .env.*
 *.log

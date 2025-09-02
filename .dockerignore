@@ -2,8 +2,8 @@
 .git
 .github
 node_modules
-storage/logs/*
-storage/framework/cache/*
+storage/logs/*.log
+storage/framework/cache/data/*
 storage/framework/sessions/*
 storage/framework/views/*
 .env

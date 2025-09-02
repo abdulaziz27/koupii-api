@@ -22,3 +22,12 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Docker & CI/CD (exclude from GitHub)
+DOCKER_SETUP.md
+env.docker.template
+deploy.sh
+docker/
+
+# Docker volumes
+docker-volumes/

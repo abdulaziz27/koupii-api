@@ -203,7 +203,7 @@ class ValidationHelper
                 // General test information
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
-                'type' => 'required|in:reading,listening,speaking,writing', // Diperluas sesuai ERD
+                'type' => 'required|in:reading,listening,speaking,writing',
                 'difficulty' => 'required|in:beginner,intermediate,advanced',
                 'test_type' => 'required|in:single,final',
                 'timer_mode' => 'nullable|in:countdown,countup,none',
@@ -255,6 +255,8 @@ class ValidationHelper
                 'passages.*.question_groups.*.questions.*.items.*.options' => 'nullable|array',
                 'passages.*.question_groups.*.questions.*.items.*.options.*.option_key' => 'nullable|string|max:50',
                 'passages.*.question_groups.*.questions.*.items.*.options.*.option_text' => 'nullable|string',
+                'passages.*.question_groups.*.questions.*.remove_items' => 'nullable|array',
+                'passages.*.question_groups.*.questions.*.remove_items.*' => 'string|exists:test_questions,id',
                 'passages.*.question_groups.*.questions.*.items.*.breakdown' => 'nullable|array',
                 'passages.*.question_groups.*.questions.*.items.*.breakdown.explanation' => 'nullable|string',
                 'passages.*.question_groups.*.questions.*.items.*.breakdown.has_highlight' => 'nullable|boolean',

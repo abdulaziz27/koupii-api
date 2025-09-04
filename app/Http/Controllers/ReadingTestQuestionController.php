@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Helpers\ValidationHelper;
 use App\Helpers\FileUploadHelper;
-use Illuminate\Support\Facades\Log;
 
 class ReadingTestQuestionController extends Controller
 {
@@ -72,7 +71,7 @@ class ReadingTestQuestionController extends Controller
                                     return strpos((string)$q->question_number, '.') === false;
                                 });
 
-                                // fallback if there is no explicit main (e.g. all use 2.1, 2.2)
+                                // Fallback if there is no explicit main (e.g., all use 2.1, 2.2)
                                 if (!$mainQuestion) {
                                     $mainQuestion = $questions->sortBy('question_number')->first();
                                 }
@@ -99,7 +98,7 @@ class ReadingTestQuestionController extends Controller
                                             if (!$isStudent) {
                                                 $correctAnswers = $question->correct_answers;
                                                 $decodedAnswers = is_array($correctAnswers) ? $correctAnswers : json_decode($correctAnswers, true) ?? [];
-                                                $questionData['correct_answers'] = count($decodedAnswers) === 1 ? $decodedAnswers[0] : $decodedAnswers;
+                                                $questionData['correct_answers'] = is_array($decodedAnswers) && count($decodedAnswers) === 1 ? $decodedAnswers[0] : $decodedAnswers;
                                                 $questionData['breakdown'] = $question->breakdowns->map(function ($breakdown) {
                                                     $highlights = $breakdown->highlightSegments->map(function ($highlight) {
                                                         return [
@@ -110,7 +109,7 @@ class ReadingTestQuestionController extends Controller
                                                     return [
                                                         'explanation' => $breakdown->explanation,
                                                         'has_highlight' => $breakdown->has_highlight,
-                                                        'highlights' => count($highlights) === 1 ? $highlights[0] : $highlights,
+                                                        'highlights' => is_array($highlights) && count($highlights) === 1 ? $highlights[0] : $highlights,
                                                     ];
                                                 })->first();
                                             }
@@ -127,26 +126,11 @@ class ReadingTestQuestionController extends Controller
                                     $itemData = [
                                         'question_id' => $item->id,
                                         'question_number' => $item->question_number,
-                                        'question_text' => $item->question_text,
                                     ];
 
                                     if (!$isStudent) {
-                                        $itemData['correct_answers'] = json_decode($item->correct_answers, true);
-                                        $correctAnswers = $itemData['correct_answers'];
-                                        $itemData['correct_answers'] = count($correctAnswers) === 1 ? $correctAnswers[0] : $correctAnswers;
-                                        $itemData['breakdown'] = $item->breakdowns->map(function ($breakdown) {
-                                            $highlights = $breakdown->highlightSegments->map(function ($highlight) {
-                                                return [
-                                                    'start_char_index' => $highlight->start_char_index,
-                                                    'end_char_index' => $highlight->end_char_index,
-                                                ];
-                                            })->toArray();
-                                            return [
-                                                'explanation' => $breakdown->explanation,
-                                                'has_highlight' => $breakdown->has_highlight,
-                                                'highlights' => count($highlights) === 1 ? $highlights[0] : $highlights,
-                                            ];
-                                        })->first();
+                                        $correctAnswers = json_decode($item->correct_answers, true);
+                                        $itemData['correct_answers'] = is_array($correctAnswers) && count($correctAnswers) === 1 ? $correctAnswers[0] : ($correctAnswers ?? []);
                                     }
 
                                     return $itemData;
@@ -166,6 +150,24 @@ class ReadingTestQuestionController extends Controller
                                     })->toArray(),
                                     'items' => $items->isNotEmpty() ? $items->toArray() : null,
                                 ];
+
+                                if (!$isStudent) {
+                                    $correctAnswers = json_decode($mainQuestion->correct_answers, true);
+                                    $mainQuestionData['correct_answers'] = is_array($correctAnswers) && count($correctAnswers) === 1 ? $correctAnswers[0] : ($correctAnswers ?? []);
+                                    $mainQuestionData['breakdown'] = $mainQuestion->breakdowns->map(function ($breakdown) {
+                                        $highlights = $breakdown->highlightSegments->map(function ($highlight) {
+                                            return [
+                                                'start_char_index' => $highlight->start_char_index,
+                                                'end_char_index' => $highlight->end_char_index,
+                                            ];
+                                        })->toArray();
+                                        return [
+                                            'explanation' => $breakdown->explanation,
+                                            'has_highlight' => $breakdown->has_highlight,
+                                            'highlights' => is_array($highlights) && count($highlights) === 1 ? $highlights[0] : $highlights,
+                                        ];
+                                    })->first();
+                                }
 
                                 return [
                                     'instruction' => $group->instruction,
@@ -280,7 +282,7 @@ class ReadingTestQuestionController extends Controller
                                     'question_group_id' => $questionGroup->id,
                                     'question_type' => $questionData['question_type'],
                                     'question_number' => $itemData['question_number'] ?? null,
-                                    'question_text' => $itemData['question_text'] ?? null,
+                                    'question_text' => null,
                                     'question_data' => $itemData['question_data'] ?? [],
                                     'correct_answers' => json_encode($itemData['correct_answers'] ?? []),
                                 ]);
@@ -295,24 +297,25 @@ class ReadingTestQuestionController extends Controller
                                         ]);
                                     }
                                 }
+                            }
 
-                                if (isset($itemData['breakdown'])) {
-                                    $breakdown = QuestionBreakdown::create([
-                                        'id' => (string) Str::uuid(),
-                                        'question_id' => $subQuestion->id,
-                                        'explanation' => $itemData['breakdown']['explanation'] ?? null,
-                                        'has_highlight' => $itemData['breakdown']['has_highlight'] ?? false,
-                                    ]);
+                            // Breakdown is attached to the main question
+                            if (isset($questionData['breakdown'])) {
+                                $breakdown = QuestionBreakdown::create([
+                                    'id' => (string) Str::uuid(),
+                                    'question_id' => $question->id,
+                                    'explanation' => $questionData['breakdown']['explanation'] ?? null,
+                                    'has_highlight' => $questionData['breakdown']['has_highlight'] ?? false,
+                                ]);
 
-                                    if (isset($itemData['breakdown']['highlights'])) {
-                                        foreach ($itemData['breakdown']['highlights'] as $highlightData) {
-                                            HighlightSegment::create([
-                                                'id' => (string) Str::uuid(),
-                                                'breakdown_id' => $breakdown->id,
-                                                'start_char_index' => $highlightData['start_char_index'] ?? null,
-                                                'end_char_index' => $highlightData['end_char_index'] ?? null,
-                                            ]);
-                                        }
+                                if (isset($questionData['breakdown']['highlights'])) {
+                                    foreach ($questionData['breakdown']['highlights'] as $highlightData) {
+                                        HighlightSegment::create([
+                                            'id' => (string) Str::uuid(),
+                                            'breakdown_id' => $breakdown->id,
+                                            'start_char_index' => $highlightData['start_char_index'] ?? null,
+                                            'end_char_index' => $highlightData['end_char_index'] ?? null,
+                                        ]);
                                     }
                                 }
                             }
@@ -420,7 +423,7 @@ class ReadingTestQuestionController extends Controller
                                 return strpos((string)$q->question_number, '.') === false;
                             });
 
-                            // fallback if there is no explicit main (e.g. all use 2.1, 2.2)
+                            // Fallback if there is no explicit main (e.g., all use 2.1, 2.2)
                             if (!$mainQuestion) {
                                 $mainQuestion = $questions->sortBy('question_number')->first();
                             }
@@ -447,7 +450,7 @@ class ReadingTestQuestionController extends Controller
                                         if (!$isStudent) {
                                             $correctAnswers = $question->correct_answers;
                                             $decodedAnswers = is_array($correctAnswers) ? $correctAnswers : json_decode($correctAnswers, true) ?? [];
-                                            $questionData['correct_answers'] = count($decodedAnswers) === 1 ? $decodedAnswers[0] : $decodedAnswers;
+                                            $questionData['correct_answers'] = is_array($decodedAnswers) && count($decodedAnswers) === 1 ? $decodedAnswers[0] : $decodedAnswers;
                                             $questionData['breakdown'] = $question->breakdowns->map(function ($breakdown) {
                                                 $highlights = $breakdown->highlightSegments->map(function ($highlight) {
                                                     return [
@@ -458,7 +461,7 @@ class ReadingTestQuestionController extends Controller
                                                 return [
                                                     'explanation' => $breakdown->explanation,
                                                     'has_highlight' => $breakdown->has_highlight,
-                                                    'highlights' => count($highlights) === 1 ? $highlights[0] : $highlights,
+                                                    'highlights' => is_array($highlights) && count($highlights) === 1 ? $highlights[0] : $highlights,
                                                 ];
                                             })->first();
                                         }
@@ -475,26 +478,11 @@ class ReadingTestQuestionController extends Controller
                                 $itemData = [
                                     'question_id' => $item->id,
                                     'question_number' => $item->question_number,
-                                    'question_text' => $item->question_text,
                                 ];
 
                                 if (!$isStudent) {
-                                    $itemData['correct_answers'] = json_decode($item->correct_answers, true);
-                                    $correctAnswers = $itemData['correct_answers'];
-                                    $itemData['correct_answers'] = count($correctAnswers) === 1 ? $correctAnswers[0] : $correctAnswers;
-                                    $itemData['breakdown'] = $item->breakdowns->map(function ($breakdown) {
-                                        $highlights = $breakdown->highlightSegments->map(function ($highlight) {
-                                            return [
-                                                'start_char_index' => $highlight->start_char_index,
-                                                'end_char_index' => $highlight->end_char_index,
-                                            ];
-                                        })->toArray();
-                                        return [
-                                            'explanation' => $breakdown->explanation,
-                                            'has_highlight' => $breakdown->has_highlight,
-                                            'highlights' => count($highlights) === 1 ? $highlights[0] : $highlights,
-                                        ];
-                                    })->first();
+                                    $correctAnswers = json_decode($item->correct_answers, true);
+                                    $itemData['correct_answers'] = is_array($correctAnswers) && count($correctAnswers) === 1 ? $correctAnswers[0] : ($correctAnswers ?? []);
                                 }
 
                                 return $itemData;
@@ -514,6 +502,24 @@ class ReadingTestQuestionController extends Controller
                                 })->toArray(),
                                 'items' => $items->isNotEmpty() ? $items->toArray() : null,
                             ];
+
+                            if (!$isStudent) {
+                                $correctAnswers = json_decode($mainQuestion->correct_answers, true);
+                                $mainQuestionData['correct_answers'] = is_array($correctAnswers) && count($correctAnswers) === 1 ? $correctAnswers[0] : ($correctAnswers ?? []);
+                                $mainQuestionData['breakdown'] = $mainQuestion->breakdowns->map(function ($breakdown) {
+                                    $highlights = $breakdown->highlightSegments->map(function ($highlight) {
+                                        return [
+                                            'start_char_index' => $highlight->start_char_index,
+                                            'end_char_index' => $highlight->end_char_index,
+                                        ];
+                                    })->toArray();
+                                    return [
+                                        'explanation' => $breakdown->explanation,
+                                        'has_highlight' => $breakdown->has_highlight,
+                                        'highlights' => is_array($highlights) && count($highlights) === 1 ? $highlights[0] : $highlights,
+                                    ];
+                                })->first();
+                            }
 
                             return [
                                 'instruction' => $group->instruction,
@@ -557,7 +563,7 @@ class ReadingTestQuestionController extends Controller
         try {
             DB::beginTransaction();
 
-            // update main test
+            // Update main test
             $test->update([
                 'difficulty' => $validated['difficulty'],
                 'title' => $validated['title'],
@@ -616,14 +622,14 @@ class ReadingTestQuestionController extends Controller
                             ]
                         );
 
-                        // ambil data lama
+                        // Get existing data
                         $currentData = is_array($question->question_data) ? $question->question_data : [];
                         $currentPaths = $currentData['image_path'] ?? [];
 
-                        // upload baru
+                        // Handle new uploads
                         $newPaths = [];
                         if ($request->hasFile($imageKey)) {
-                            // hapus lama
+                            // Delete old images
                             foreach ($currentPaths as $old) {
                                 FileUploadHelper::delete(str_replace('/storage/', '', $old));
                             }
@@ -633,7 +639,7 @@ class ReadingTestQuestionController extends Controller
                             }
                         }
 
-                        // remove_images
+                        // Handle remove_images
                         $removeImages = $qData['question_data']['remove_images'] ?? [];
                         if ($removeImages && !$newPaths) {
                             foreach ($removeImages as $rm) {
@@ -649,12 +655,12 @@ class ReadingTestQuestionController extends Controller
 
                         $question->update([
                             'question_data' => array_merge($newQData, $finalPaths ? ['image_path' => $finalPaths] : []),
-                            'correct_answers' => $qData['correct_answers'] ?? $question->correct_answers,
+                            'correct_answers' => json_encode($qData['correct_answers'] ?? ($question->correct_answers ? json_decode($question->correct_answers, true) : [])),
                         ]);
 
                         $existingQuestionIds[] = $question->id;
 
-                        // handle options
+                        // Handle options
                         if (isset($qData['options'])) {
                             $optionIds = [];
                             foreach ($qData['options'] as $oData) {
@@ -674,7 +680,38 @@ class ReadingTestQuestionController extends Controller
                                 ->delete();
                         }
 
-                        // handle breakdown
+                        // Handle items if present (for types like Matching Heading)
+                        if (isset($qData['items']) || isset($qData['remove_items'])) {
+                            $subQuestionIds = [];
+
+                            // Update or create items
+                            if (isset($qData['items'])) {
+                                foreach ($qData['items'] as $itemData) {
+                                    $subQuestion = TestQuestion::updateOrCreate(
+                                        ['id' => $itemData['id'] ?? null],
+                                        [
+                                            'id' => $itemData['id'] ?? (string) Str::uuid(),
+                                            'question_group_id' => $group->id,
+                                            'question_type' => $qData['question_type'],
+                                            'question_number' => $itemData['question_number'] ?? null,
+                                            'question_text' => null,
+                                            'question_data' => $itemData['question_data'] ?? [],
+                                            'correct_answers' => json_encode($itemData['correct_answers'] ?? []),
+                                        ]
+                                    );
+                                    $subQuestionIds[] = $subQuestion->id;
+                                }
+                            }
+
+                            // Delete items explicitly marked for removal
+                            if (isset($qData['remove_items']) && is_array($qData['remove_items'])) {
+                                TestQuestion::whereIn('id', $qData['remove_items'])
+                                    ->where('question_group_id', $group->id)
+                                    ->delete();
+                            }
+                        }
+
+                        // Handle breakdown for main question
                         if (isset($qData['breakdown'])) {
                             $breakdown = QuestionBreakdown::updateOrCreate(
                                 ['question_id' => $question->id],
@@ -706,8 +743,12 @@ class ReadingTestQuestionController extends Controller
                         }
                     }
 
+                    // Delete main questions not included in the request
                     TestQuestion::where('question_group_id', $group->id)
                         ->whereNotIn('id', $existingQuestionIds)
+                        ->whereDoesntHave('questionGroup', function ($query) {
+                            $query->where('question_type', 'Matching Heading');
+                        })
                         ->delete();
                 }
 
@@ -727,6 +768,7 @@ class ReadingTestQuestionController extends Controller
             return response()->json(['message' => 'Failed to update reading test', 'error' => $e->getMessage()], 500);
         }
     }
+
 
     public function deletePassage($passageId)
     {

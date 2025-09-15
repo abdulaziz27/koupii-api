@@ -21,29 +21,8 @@
                     "Auth"
                 ],
                 "summary": "Register a new user",
-                "description": "Registers a user and logs them in",
+                "description": "Registers a user and returns an access token",
                 "operationId": "d764dd091cc4494ae0baf360b03319f3",
-                "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth (Sanctum)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Referring URL Frontend for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    }
-                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -89,7 +68,11 @@
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Registered & Logged in successfully"
+                                            "example": "Registered successfully"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abcdef1234567890"
                                         }
                                     },
                                     "type": "object"
@@ -112,29 +95,8 @@
                     "Auth"
                 ],
                 "summary": "Login user",
-                "description": "Authenticates a user using email and password. Requires X-XSRF-TOKEN header if using Sanctum with session-based auth.",
+                "description": "Authenticates a user and returns an access token",
                 "operationId": "8dcb70df1020986038d098cc08d05dae",
-                "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth (Sanctum)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Referring URL Frontend for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    }
-                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -171,6 +133,10 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Logged in successfully"
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "1|abcdef1234567890"
                                         }
                                     },
                                     "type": "object"
@@ -196,29 +162,8 @@
                     "Auth"
                 ],
                 "summary": "Logout the current user",
-                "description": "Invalidates the session and logs out the user. Requires X-XSRF-TOKEN header if using session-based Sanctum.",
+                "description": "Revokes the user's current access token",
                 "operationId": "69281b12abb272c76871f19cb17ca563",
-                "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth (Sanctum)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Referring URL Frontend for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Logout successful",
@@ -245,7 +190,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -256,29 +201,8 @@
                     "Auth"
                 ],
                 "summary": "Get current authenticated user",
-                "description": "Returns the authenticated user's profile data. Requires CSRF token in session-based Sanctum.",
+                "description": "Returns the authenticated user's profile data",
                 "operationId": "b9abb1a7a74670a19c215c2c133f14d8",
-                "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth (Sanctum)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Referring URL Frontend for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "Authenticated user data",
@@ -301,14 +225,6 @@
                                         "role": {
                                             "type": "string",
                                             "example": "user"
-                                        },
-                                        "avatar": {
-                                            "type": "string",
-                                            "example": "https://example.com/avatar.jpg"
-                                        },
-                                        "bio": {
-                                            "type": "string",
-                                            "example": "Frontend Developer"
                                         }
                                     },
                                     "type": "object"
@@ -322,33 +238,9 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
-            }
-        },
-        "/sanctum/csrf-cookie": {
-            "get": {
-                "tags": [
-                    "Auth"
-                ],
-                "summary": "Get CSRF token cookie for Sanctum",
-                "description": "This endpoint sets the XSRF-TOKEN cookie required for CSRF protection in session-based auth. Usually called before login.",
-                "operationId": "d5484dc25fb583625272d29e50a62548",
-                "responses": {
-                    "204": {
-                        "description": "CSRF cookie set successfully",
-                        "headers": {
-                            "Set-Cookie": {
-                                "description": "XSRF-TOKEN and/or session cookie",
-                                "schema": {
-                                    "type": "string",
-                                    "example": "XSRF-TOKEN=abc123; Path=/; Secure; HttpOnly; SameSite=Lax"
-                                }
-                            }
-                        }
-                    }
-                }
             }
         },
         "/api/classes": {

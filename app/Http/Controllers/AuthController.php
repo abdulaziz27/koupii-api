@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\ValidationHelper;
@@ -16,7 +15,7 @@ class AuthController extends Controller
      *     path="/api/auth/register",
      *     tags={"Auth"},
      *     summary="Register a new user",
-     *     description="Registers a user and logs them in",
+     *     description="Registers a user and returns an access token",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -24,28 +23,15 @@ class AuthController extends Controller
      *             @OA\Property(property="name", type="string", example="Fika Riyadi"),
      *             @OA\Property(property="email", type="string", format="email", example="fika@example.com"),
      *             @OA\Property(property="password", type="string", format="password", example="secret123"),
-     *             @OA\Property(property="role", type="string", example="user"),
+     *             @OA\Property(property="role", type="string", example="user")
      *         )
-     *     ),
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth (Sanctum)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Referring URL Frontend for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
      *     ),
      *     @OA\Response(
      *         response=201,
      *         description="User registered successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Registered & Logged in successfully")
+     *             @OA\Property(property="message", type="string", example="Registered successfully"),
+     *             @OA\Property(property="token", type="string", example="1|abcdef1234567890")
      *         )
      *     ),
      *     @OA\Response(response=422, description="Validation failed"),
@@ -58,13 +44,10 @@ class AuthController extends Controller
         try {
             $validated = ValidationHelper::register($request->all());
             if ($validated->fails()) {
-                return response()->json(
-                    [
-                        'message' => 'Validation failed',
-                        'errors' => $validated->errors(),
-                    ],
-                    422,
-                );
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validated->errors(),
+                ], 422);
             }
 
             $data = $validated->validated();
@@ -76,14 +59,20 @@ class AuthController extends Controller
                 'role' => $data['role'],
             ]);
 
-            Auth::login($user);
-            $request->session()->regenerate();
-            DB::commit();
+            // Create token
+            $token = $user->createToken('api-token')->plainTextToken;
 
-            return response()->json(['message' => 'Registered & Logged in successfully'], 201);
+            DB::commit();
+            return response()->json([
+                'message' => 'Registered successfully',
+                'token' => $token,
+            ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Internal server error', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Internal server error',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -92,7 +81,7 @@ class AuthController extends Controller
      *     path="/api/auth/login",
      *     tags={"Auth"},
      *     summary="Login user",
-     *     description="Authenticates a user using email and password. Requires X-XSRF-TOKEN header if using Sanctum with session-based auth.",
+     *     description="Authenticates a user and returns an access token",
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -101,25 +90,12 @@ class AuthController extends Controller
      *             @OA\Property(property="password", type="string", format="password", example="secret123")
      *         )
      *     ),
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth (Sanctum)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Referring URL Frontend for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Login successful",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Logged in successfully")
+     *             @OA\Property(property="message", type="string", example="Logged in successfully"),
+     *             @OA\Property(property="token", type="string", example="1|abcdef1234567890")
      *         )
      *     ),
      *     @OA\Response(response=401, description="Invalid credentials"),
@@ -133,27 +109,32 @@ class AuthController extends Controller
         try {
             $validator = ValidationHelper::login($request->all());
             if ($validator->fails()) {
-                return response()->json(
-                    [
-                        'message' => 'Validation error',
-                        'errors' => $validator->errors(),
-                    ],
-                    422,
-                );
+                return response()->json([
+                    'message' => 'Validation error',
+                    'errors' => $validator->errors(),
+                ], 422);
             }
 
             $data = $validator->validated();
 
-            if (!Auth::attempt(['email' => $data['email'], 'password' => $data['password']])) {
+            $user = User::where('email', $data['email'])->first();
+            if (!$user || !Hash::check($data['password'], $user->password)) {
                 return response()->json(['message' => 'Invalid credentials'], 401);
             }
 
-            $request->session()->regenerate();
+            $token = $user->createToken('api-token')->plainTextToken;
+
             DB::commit();
-            return response()->json(['message' => 'Logged in successfully'], 200);
+            return response()->json([
+                'message' => 'Logged in successfully',
+                'token' => $token
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Server error',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -162,22 +143,8 @@ class AuthController extends Controller
      *     path="/api/auth/logout",
      *     tags={"Auth"},
      *     summary="Logout the current user",
-     *     description="Invalidates the session and logs out the user. Requires X-XSRF-TOKEN header if using session-based Sanctum.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth (Sanctum)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Referring URL Frontend for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     description="Revokes the user's current access token",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Logout successful",
@@ -192,13 +159,13 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
+            $request->user()->currentAccessToken()->delete();
             return response()->json(['message' => 'Logged out successfully'], 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'Logout failed', 'error' => $e->getMessage()], 500);
+            return response()->json([
+                'message' => 'Logout failed',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -207,22 +174,8 @@ class AuthController extends Controller
      *     path="/api/auth/me",
      *     tags={"Auth"},
      *     summary="Get current authenticated user",
-     *     description="Returns the authenticated user's profile data. Requires CSRF token in session-based Sanctum.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth (Sanctum)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Referring URL Frontend for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     description="Returns the authenticated user's profile data",
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Authenticated user data",
@@ -230,9 +183,7 @@ class AuthController extends Controller
      *             @OA\Property(property="id", type="integer", example=1),
      *             @OA\Property(property="name", type="string", example="Fika Riyadi"),
      *             @OA\Property(property="email", type="string", example="fika@example.com"),
-     *             @OA\Property(property="role", type="string", example="user"),
-     *             @OA\Property(property="avatar", type="string", example="https://example.com/avatar.jpg"),
-     *             @OA\Property(property="bio", type="string", example="Frontend Developer")
+     *             @OA\Property(property="role", type="string", example="user")
      *         )
      *     ),
      *     @OA\Response(response=401, description="Unauthenticated")
@@ -241,27 +192,5 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return response()->json($request->user());
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/sanctum/csrf-cookie",
-     *     summary="Get CSRF token cookie for Sanctum",
-     *     tags={"Auth"},
-     *     description="This endpoint sets the XSRF-TOKEN cookie required for CSRF protection in session-based auth. Usually called before login.",
-     *     @OA\Response(
-     *         response=204,
-     *         description="CSRF cookie set successfully",
-     *         @OA\Header(
-     *             header="Set-Cookie",
-     *             description="XSRF-TOKEN and/or session cookie",
-     *             @OA\Schema(type="string", example="XSRF-TOKEN=abc123; Path=/; Secure; HttpOnly; SameSite=Lax")
-     *         )
-     *     )
-     * )
-     */
-    public function sanctum(Request $request)
-    {
-        return response()->json(['message' => 'CSRF cookie set']);
     }
 }

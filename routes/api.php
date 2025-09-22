@@ -14,6 +14,31 @@ use App\Http\Controllers\ReadingTestQuestionController;
 
 Route::get('/health', fn() => response()->json(['ok' => true, 'time' => time()]));
 
+Route::get('/version', function() {
+    $version = [
+        'app' => config('app.name', 'Koupii API'),
+        'version' => '1.0.0',
+        'environment' => config('app.env'),
+        'timestamp' => now()->toISOString(),
+    ];
+    
+    // Add git commit if available
+    if (file_exists(base_path('.git/HEAD'))) {
+        $head = trim(file_get_contents(base_path('.git/HEAD')));
+        if (strpos($head, 'ref:') === 0) {
+            $ref = trim(substr($head, 4));
+            $commitFile = base_path('.git/' . $ref);
+            if (file_exists($commitFile)) {
+                $version['commit'] = substr(trim(file_get_contents($commitFile)), 0, 7);
+            }
+        } else {
+            $version['commit'] = substr($head, 0, 7);
+        }
+    }
+    
+    return response()->json($version);
+});
+
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);

@@ -2,82 +2,82 @@ name: Auto Deploy to VPS
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
-    types: [ closed ]
+    branches: [main]
+    types: [closed]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
-        key: ${{ secrets.VPS_SSH_KEY }}
-        port: ${{ secrets.VPS_PORT }}
-        script: |
-          set -e
-          echo "🚀 Starting deployment..."
-          
-          # Navigate to project directory
-          cd /srv/apps/koupii-api/releases/initial
-          
-          # Show current commit
-          echo "📍 Current commit: $(git rev-parse --short HEAD)"
-          
-          # Pull latest changes
-          echo "📥 Pulling latest changes..."
-          git fetch origin
-          git reset --hard origin/main
-          
-          # Show new commit
-          echo "✅ Updated to commit: $(git rev-parse --short HEAD)"
-          
-          # Navigate to docker-compose directory
-          cd /srv/apps/koupii-api
-          
-          # Restart backend container
-          echo "🔄 Restarting backend container..."
-          docker compose restart backend
-          
-          # Wait for container to be ready
-          echo "⏳ Waiting for container to be ready..."
-          sleep 10
-          
-          # Clear and cache Laravel config
-          echo "🧹 Clearing and caching Laravel config..."
-          docker compose exec -T backend sh -c "
-            php artisan config:clear && 
-            php artisan route:clear && 
-            php artisan cache:clear && 
-            php artisan config:cache &&
-            php artisan route:cache
-          "
-          
-          # Test API endpoint
-          echo "🧪 Testing API endpoint..."
-          HEALTH_CHECK=$(curl -s -o /dev/null -w "%{http_code}" https://api-koupii.magercoding.com/api/health)
-          if [ "$HEALTH_CHECK" = "200" ]; then
-            echo "✅ Deployment successful! API is responding."
-          else
-            echo "❌ Deployment warning: API health check returned $HEALTH_CHECK"
-          fi
-          
-          echo "🎉 Deployment completed!"
 
-    - name: Notify Deployment Status
-      if: always()
-      run: |
-        if [ "${{ job.status }}" == "success" ]; then
-          echo "✅ Deployment to VPS completed successfully!"
-        else
-          echo "❌ Deployment to VPS failed!"
-        fi
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            set -e
+            echo "🚀 Starting deployment..."
+
+            # Navigate to project directory
+            cd /srv/apps/koupii-api/releases/initial
+
+            # Show current commit
+            echo "📍 Current commit: $(git rev-parse --short HEAD)"
+
+            # Pull latest changes
+            echo "📥 Pulling latest changes..."
+            git fetch origin
+            git reset --hard origin/main
+
+            # Show new commit
+            echo "✅ Updated to commit: $(git rev-parse --short HEAD)"
+
+            # Navigate to docker-compose directory
+            cd /srv/apps/koupii-api
+
+            # Restart backend container
+            echo "🔄 Restarting backend container..."
+            docker compose restart backend
+
+            # Wait for container to be ready
+            echo "⏳ Waiting for container to be ready..."
+            sleep 10
+
+            # Clear and cache Laravel config
+            echo "🧹 Clearing and caching Laravel config..."
+            docker compose exec -T backend sh -c "
+              php artisan config:clear &&
+              php artisan route:clear &&
+              php artisan cache:clear &&
+              php artisan config:cache &&
+              php artisan route:cache
+            "
+
+            # Test API endpoint
+            echo "🧪 Testing API endpoint..."
+            HEALTH_CHECK=$(curl -s -o /dev/null -w "%{http_code}" https://api-koupii.magercoding.com/api/health)
+            if [ "$HEALTH_CHECK" = "200" ]; then
+              echo "✅ Deployment successful! API is responding."
+            else
+              echo "❌ Deployment warning: API health check returned $HEALTH_CHECK"
+            fi
+
+            echo "🎉 Deployment completed!"
+
+      - name: Notify Deployment Status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "✅ Deployment to VPS completed successfully!"
+          else
+            echo "❌ Deployment to VPS failed!"
+          fi

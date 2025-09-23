@@ -44,17 +44,35 @@ jobs:
             # Navigate to docker-compose directory
             cd /srv/apps/koupii-api
 
-            # Restart backend container
-            echo "🔄 Restarting backend container..."
-            docker compose restart backend
+            # Restart containers
+            echo "🔄 Restarting containers..."
+            docker compose restart backend mysql
 
-            # Wait for container to be ready
-            echo "⏳ Waiting for container to be ready..."
-            sleep 10
+            # Wait for MySQL to be ready
+            echo "🗄️ Waiting for MySQL to be ready..."
+            for i in {1..30}; do
+              if docker compose exec -T mysql mysql -uroot -proot -e "SELECT 1;" >/dev/null 2>&1; then
+                echo "✅ MySQL is ready after ${i} attempts"
+                break
+              fi
+              echo "⏳ MySQL not ready yet, waiting... (attempt $i/30)"
+              sleep 2
+            done
 
             # Check and create database if needed
             echo "🗄️ Ensuring database exists..."
             docker compose exec -T mysql mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS koupii_api;" || echo "⚠️ Database creation failed"
+
+            # Wait for backend to be ready
+            echo "⏳ Waiting for backend container to be ready..."
+            for i in {1..20}; do
+              if docker compose exec -T backend php artisan --version >/dev/null 2>&1; then
+                echo "✅ Backend is ready after ${i} attempts"
+                break
+              fi
+              echo "⏳ Backend not ready yet, waiting... (attempt $i/20)"
+              sleep 3
+            done
 
             # Run migrations
             echo "🔄 Running database migrations..."

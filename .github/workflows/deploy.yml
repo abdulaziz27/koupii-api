@@ -52,6 +52,14 @@ jobs:
             echo "⏳ Waiting for container to be ready..."
             sleep 10
 
+            # Check and create database if needed
+            echo "🗄️ Ensuring database exists..."
+            docker compose exec -T mysql mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS koupii_api;" || echo "⚠️ Database creation failed"
+
+            # Run migrations
+            echo "🔄 Running database migrations..."
+            docker compose exec -T backend php artisan migrate --force || echo "⚠️ Migration failed"
+
             # Clear and cache Laravel config
             echo "🧹 Clearing and caching Laravel config..."
             docker compose exec -T backend sh -c "

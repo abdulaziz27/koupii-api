@@ -217,12 +217,20 @@ class UserController extends Controller
 
             $data = $validator->validated();
 
+            // Debug request
+            \Log::info('Request data', [
+                'has_file' => $request->hasFile('avatar'),
+                'all' => $request->all(),
+                'files' => $request->allFiles(),
+                'validated' => $data
+            ]);
+            
             if ($request->hasFile('avatar')) {
                 if ($user->avatar) {
                     FileUploadHelper::delete($user->avatar);
                 }
                 $data['avatar'] = FileUploadHelper::upload($request->file('avatar'), 'avatar');
-
+                
                 // Debug log
                 \Log::info('Avatar upload', [
                     'file' => $request->file('avatar')->getClientOriginalName(),

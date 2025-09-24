@@ -222,9 +222,29 @@ class UserController extends Controller
                     FileUploadHelper::delete($user->avatar);
                 }
                 $data['avatar'] = FileUploadHelper::upload($request->file('avatar'), 'avatar');
+
+                // Debug log
+                \Log::info('Avatar upload', [
+                    'file' => $request->file('avatar')->getClientOriginalName(),
+                    'size' => $request->file('avatar')->getSize(),
+                    'path' => $data['avatar']
+                ]);
             }
 
+            // Debug log before update
+            \Log::info('Before update', [
+                'user_id' => $user->id,
+                'avatar_before' => $user->avatar,
+                'data' => $data
+            ]);
+
             $user->update($data);
+
+            // Debug log after update
+            \Log::info('After update', [
+                'user_id' => $user->id,
+                'avatar_after' => $user->avatar
+            ]);
 
             DB::commit();
             $user->refresh();

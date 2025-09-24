@@ -78,6 +78,14 @@ jobs:
             echo "🔄 Running database migrations..."
             docker compose exec -T backend php artisan migrate --force || echo "⚠️ Migration failed"
 
+            # Setup storage symlink
+            echo "🔗 Setting up storage symlink..."
+            docker compose exec -T backend sh -c "
+              mkdir -p /var/www/html/storage/app/public &&
+              rm -f /var/www/html/public/storage &&
+              ln -s /var/www/html/storage/app/public /var/www/html/public/storage
+            " || echo "⚠️ Storage symlink setup failed"
+
             # Clear and cache Laravel config
             echo "🧹 Clearing and caching Laravel config..."
             docker compose exec -T backend sh -c "

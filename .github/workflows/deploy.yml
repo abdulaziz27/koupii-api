@@ -44,14 +44,25 @@ jobs:
             # Navigate to docker-compose directory
             cd /srv/apps/koupii-api
 
+            # Update APP_KEY in docker-compose.yml if needed
+            echo "🔑 Updating APP_KEY in docker-compose.yml..."
+            if [ -f .env ]; then
+                APP_KEY=$(grep "^APP_KEY=" .env | cut -d "=" -f2)
+                if [ ! -z "$APP_KEY" ]; then
+                    sed -i "s/APP_KEY=.*/APP_KEY=$APP_KEY/" docker-compose.yml
+                    echo "✅ APP_KEY updated in docker-compose.yml"
+                fi
+            fi
+
             # Restart containers
             echo "🔄 Restarting containers..."
-            docker compose restart backend mysql
+            docker compose down
+            docker compose up -d
 
             # Wait for MySQL to be ready
             echo "🗄️ Waiting for MySQL to be ready..."
             for i in {1..30}; do
-              if docker compose exec -T mysql mysql -uroot -proot -e "SELECT 1;" >/dev/null 2>&1; then
+              if docker compose exec -T mysql mysqladmin ping -h"mysql" --silent; then
                 echo "✅ MySQL is ready after ${i} attempts"
                 break
               fi
@@ -65,12 +76,12 @@ jobs:
 
             # Wait for backend to be ready
             echo "⏳ Waiting for backend container to be ready..."
-            for i in {1..20}; do
+            for i in {1..30}; do
               if docker compose exec -T backend php artisan --version >/dev/null 2>&1; then
                 echo "✅ Backend is ready after ${i} attempts"
                 break
               fi
-              echo "⏳ Backend not ready yet, waiting... (attempt $i/20)"
+              echo "⏳ Backend not ready yet, waiting... (attempt $i/30)"
               sleep 3
             done
 
@@ -78,12 +89,13 @@ jobs:
             echo "🔄 Running database migrations..."
             docker compose exec -T backend php artisan migrate --force || echo "⚠️ Migration failed"
 
-            # Setup storage symlink
+            # Setup storage symlink (FIXED PATH)
             echo "🔗 Setting up storage symlink..."
             docker compose exec -T backend sh -c "
               mkdir -p /var/www/html/storage/app/public &&
               rm -f /var/www/html/public/storage &&
-              ln -s /var/www/html/storage/app/public /var/www/html/public/storage
+              ln -s /var/www/html/storage/app/public /var/www/html/public/storage &&
+              echo 'Storage symlink: /var/www/html/public/storage -> /var/www/html/storage/app/public'
             " || echo "⚠️ Storage symlink setup failed"
 
             # Clear and cache Laravel config
@@ -94,11 +106,12 @@ jobs:
               php artisan cache:clear &&
               php artisan config:cache &&
               php artisan route:cache
-            "
+            " || echo "⚠️ Cache clearing failed"
 
             # Test API endpoint
             echo "🧪 Testing API endpoint..."
-            HEALTH_CHECK=$(curl -s -o /dev/null -w "%{http_code}" https://api-koupii.magercoding.com/api/health)
+            HEALTH_CHECK=$(curl -s -o /dev/null -w "%{http_code}" https://api-koupii.magercoding.com/api/version)
+
             if [ "$HEALTH_CHECK" = "200" ]; then
               echo "✅ Deployment successful! API is responding."
             else

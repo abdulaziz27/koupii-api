@@ -57,6 +57,50 @@ class UserController extends Controller
      *     )
      * )
      */
+    /**
+     * @OA\Get(
+     *     path="/api/profile",
+     *     tags={"Profile"},
+     *     summary="Get current user profile",
+     *     description="Retrieve profile information for the authenticated user.",
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Current user profile data",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="id", type="string", example="d2fb93ec-6043-4384-814d-0e48f36aed50"),
+     *             @OA\Property(property="name", type="string", example="Fika"),
+     *             @OA\Property(property="email", type="string", example="student2@example.com"),
+     *             @OA\Property(property="role", type="string", example="student"),
+     *             @OA\Property(property="avatar", type="string", nullable=true, example="https://api-koupii.magercoding.com/storage/avatar/6887cfd4a9ec8.png"),
+     *             @OA\Property(property="bio", type="string", example="Student from Informatics")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     )
+     * )
+     */
+    public function profile()
+    {
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $data = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'avatar' => $user->avatar ? url($user->avatar) : null,
+            'bio' => $user->bio
+        ];
+
+        return response()->json($data, 200);
+    }
+
     public function show($id)
     {
         $user = User::find($id);

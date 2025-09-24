@@ -49,7 +49,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::prefix('profile')->middleware('auth:sanctum')->group(function () {
-    Route::get('/', [UserController::class, 'profile']); // Current user profile
+    Route::get('/', [UserController::class, 'profile']);
     Route::get('/{id}', [UserController::class, 'show']);
     Route::patch('/update', [UserController::class, 'update']);
     Route::delete('/destroy', [UserController::class, 'destroy']);

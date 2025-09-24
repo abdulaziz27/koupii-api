@@ -51,9 +51,9 @@ class ValidationHelper
         return Validator::make(
             $data,
             [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email,' . auth()->user()->id,
-                'role' => 'required|in:teacher,student,admin',
+                'name' => 'sometimes|required|string|max:255',
+                'email' => 'sometimes|required|email|unique:users,email,' . auth()->user()->id,
+                'role' => 'sometimes|required|in:teacher,student,admin',
                 'avatar' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
                 'bio' => 'nullable|string',
             ],
@@ -61,7 +61,7 @@ class ValidationHelper
                 'name.required' => 'Name is required',
                 'email.required' => 'Email is required',
                 'email.email' => 'Email must be a valid email address',
-                'email.unique' => 'Email already exists',
+                'email.unique' => 'This email is already taken by another user',
                 'role.required' => 'Role is required',
                 'role.in' => 'Role must be teacher, student, or admin',
                 'avatar.file' => 'Avatar must be a file',

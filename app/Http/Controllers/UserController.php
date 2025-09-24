@@ -68,7 +68,7 @@ class UserController extends Controller
             'name' => $user->name,
             'email' => $user->email,
             'role' => $user->role,
-            'avatar' => $user->avatar,
+            'avatar' => $user->avatar ? url($user->avatar) : null,
             'bio' => $user->bio
         ];
 
@@ -183,7 +183,18 @@ class UserController extends Controller
             $user->update($data);
 
             DB::commit();
-            return response()->json(['message' => 'User updated successfully', 'data' => $user], 200);
+            $user->refresh();
+            $userData = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'avatar' => $user->avatar ? url($user->avatar) : null,
+                'bio' => $user->bio,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at
+            ];
+            return response()->json(['message' => 'User updated successfully', 'data' => $userData], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);

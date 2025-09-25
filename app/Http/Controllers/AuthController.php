@@ -199,6 +199,13 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        $data = $request->user();
+        return response()->json([
+            'id' => $data->id,
+            'name' => $data->name,
+            'email' => $data->email,
+            'role' => $data->role,
+            'avatar' => $data->avatar ? url($data->avatar) : null
+        ]);
     }
 }

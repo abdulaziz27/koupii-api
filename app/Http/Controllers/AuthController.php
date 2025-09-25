@@ -52,6 +52,14 @@ class AuthController extends Controller
 
             $data = $validated->validated();
 
+            if ($user = User::where('email', $data['email'])
+                ->first()
+            ) {
+                return response()->json([
+                    'message' => "Email already exists",
+                ], 422);
+            }
+
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],

@@ -12,7 +12,7 @@ class ValidationHelper
             $data,
             [
                 'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
+                'email' => 'required|email',
                 'password' => 'required|string|min:8|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/',
                 'role' => 'required|in:teacher,student,admin',
             ],
@@ -20,7 +20,6 @@ class ValidationHelper
                 'name.required' => 'Name is required',
                 'email.required' => 'Email is required',
                 'email.email' => 'Email must be a valid email address',
-                'email.unique' => 'This email is already registered. Please use a different email or try logging in.',
                 'password.required' => 'Password is required',
                 'password.min' => 'Password must be at least 8 characters',
                 'password.regex' => 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)',

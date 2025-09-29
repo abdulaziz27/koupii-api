@@ -12,63 +12,16 @@ class UserController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/api/profile/{id}",
-     *     tags={"Profile"},
-     *     summary="Get user details by ID",
-     *     description="Retrieve public details of a user by their ID.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth (Sanctum)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Referring URL Frontend for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="User ID (UUID)",
-     *         @OA\Schema(type="string", format="uuid")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="User found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string", example="Fika"),
-     *             @OA\Property(property="email", type="string", example="student2@example.com"),
-     *             @OA\Property(property="avatar", type="string", nullable=true, example="/storage/avatar/6887cfd4a9ec8.png"),
-     *             @OA\Property(property="bio", type="string", example="Student from Informatics")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="User not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="User not found")
-     *         )
-     *     )
-     * )
-     */
-    /**
-     * @OA\Get(
      *     path="/api/profile",
      *     tags={"Profile"},
      *     summary="Get current user profile",
      *     description="Retrieve profile information for the authenticated user.",
-     *     security={{"sanctum":{}}},
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="Current user profile data",
      *         @OA\JsonContent(
-     *             @OA\Property(property="id", type="string", example="d2fb93ec-6043-4384-814d-0e48f36aed50"),
+     *             @OA\Property(property="id", type="string", format="uuid", example="d2fb93ec-6043-4384-814d-0e48f36aed50"),
      *             @OA\Property(property="name", type="string", example="Fika"),
      *             @OA\Property(property="email", type="string", example="student2@example.com"),
      *             @OA\Property(property="role", type="string", example="student"),
@@ -79,6 +32,13 @@ class UserController extends Controller
      *     @OA\Response(
      *         response=401,
      *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="User not found")
+     *         )
      *     )
      * )
      */
@@ -101,6 +61,40 @@ class UserController extends Controller
         return response()->json($data, 200);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/profile/{id}",
+     *     tags={"Profile"},
+     *     summary="Get user details by ID",
+     *     description="Retrieve public details of a user by their ID.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="User ID (UUID)",
+     *         @OA\Schema(type="string", format="uuid")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="Teacher 1"),
+     *             @OA\Property(property="email", type="string", example="teacher1@example.com"),
+     *             @OA\Property(property="role", type="string", example="teacher"),
+     *             @OA\Property(property="avatar", type="string", nullable=true, example="http://localhost:8000/storage/avatar/68da7f36cac36.JPG"),
+     *             @OA\Property(property="bio", type="string", example="Lorem ipsum dolor sit amet")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="User not found")
+     *         )
+     *     )
+     * )
+     */
     public function show($id)
     {
         $user = User::find($id);
@@ -125,21 +119,7 @@ class UserController extends Controller
      *     tags={"Profile"},
      *     summary="Update user profile",
      *     description="Update authenticated user's profile including name, email, role, avatar, and bio.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth (Sanctum)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Referring URL Frontend for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="_method",
      *         in="query",
@@ -170,18 +150,7 @@ class UserController extends Controller
      *         response=200,
      *         description="User updated successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="User updated successfully"),
-     *             @OA\Property(property="data", type="object",
-     *                 @OA\Property(property="id", type="string", example="d2fb93ec-6043-4384-814d-0e48f36aed50"),
-     *                 @OA\Property(property="name", type="string", example="Fika"),
-     *                 @OA\Property(property="email", type="string", example="student2@example.com"),
-     *                 @OA\Property(property="email_verified_at", type="string", nullable=true, example=null),
-     *                 @OA\Property(property="role", type="string", example="student"),
-     *                 @OA\Property(property="avatar", type="string", example="/storage/avatar/687f8636256b0.png"),
-     *                 @OA\Property(property="bio", type="string", example="Lorem ipsum dolor sit amet"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-07-17T07:08:54.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-07-22T12:38:14.000000Z")
-     *             )
+     *             @OA\Property(property="message", type="string", example="User updated successfully")
      *         )
      *     ),
      *     @OA\Response(
@@ -217,6 +186,17 @@ class UserController extends Controller
 
             $data = $validator->validated();
 
+            if (
+                isset($data['email']) &&
+                User::where('email', $data['email'])
+                ->where('id', '!=', $user->id)
+                ->exists()
+            ) {
+                return response()->json([
+                    'message' => "Email already exists",
+                ], 422);
+            }
+
             if ($request->hasFile('avatar')) {
                 if ($user->avatar) {
                     FileUploadHelper::delete($user->avatar);
@@ -238,7 +218,7 @@ class UserController extends Controller
                 'created_at' => $user->created_at,
                 'updated_at' => $user->updated_at
             ];
-            return response()->json(['message' => 'User updated successfully', 'data' => $userData], 200);
+            return response()->json(['message' => 'User updated successfully'], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
@@ -251,21 +231,7 @@ class UserController extends Controller
      *     tags={"Profile"},
      *     summary="Delete user profile",
      *     description="Delete the authenticated user's account, including avatar file if present.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth (Sanctum)",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Referring URL Frontend for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="User deleted successfully",
@@ -279,7 +245,10 @@ class UserController extends Controller
      *     ),
      *     @OA\Response(
      *         response=404,
-     *         description="User not found"
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="User not found")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=500,

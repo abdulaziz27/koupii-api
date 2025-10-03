@@ -75,7 +75,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }} '
             docker ps | grep koupii-backend || true
-            docker exec koupii-backend php -r "require \'vendor/autoload.php\'; $app=require \'bootstrap/app.php\'; $app->make(\'Illuminate\\\\Contracts\\\\Console\\\\Kernel\')->bootstrap(); echo \"DB=\".config(\'database.connections.mysql.database\');"
+            docker exec koupii-backend php artisan config:show database.connections.mysql.database
           '
 
     timeout-minutes: 20

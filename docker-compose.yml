@@ -11,6 +11,7 @@ services:
         environment:
             - APP_ENV=production
             - APP_DEBUG=false
+            - DB_CONNECTION=mysql
             - DB_HOST=mysql
             - DB_DATABASE=koupii_production
             - DB_USERNAME=koupii_user
@@ -31,7 +32,7 @@ services:
         environment:
             - MYSQL_DATABASE=koupii_production
             - MYSQL_USER=koupii_user
-            - DB_PASSWORD=${DB_PASSWORD}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
             - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
         ports:
             - "3306:3306"

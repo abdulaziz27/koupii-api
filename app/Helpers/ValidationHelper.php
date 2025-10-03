@@ -53,7 +53,7 @@ class ValidationHelper
                 'name' => 'sometimes|required|string|max:255',
                 'email' => 'sometimes|required|email',
                 'role' => 'sometimes|required|in:teacher,student,admin',
-                'avatar' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
+                'avatar' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg|max:10240',
                 'bio' => 'nullable|string',
             ],
             [
@@ -64,7 +64,7 @@ class ValidationHelper
                 'role.in' => 'Role must be teacher, student, or admin',
                 'avatar.file' => 'Avatar must be a file',
                 'avatar.mimetypes' => 'Avatar must be a JPEG, PNG, or JPG file',
-                'avatar.max' => 'Avatar size must be at most 2MB',
+                'avatar.max' => 'Avatar size must be at most 10MB',
                 'bio.string' => 'Bio must be a string',
             ]
         );
@@ -124,16 +124,16 @@ class ValidationHelper
             [
                 'name' => ($isUpdate ? 'sometimes|' : '') . 'required|string|max:255',
                 'description' => 'nullable|string',
-                'class_code' => ($isUpdate ? 'sometimes|' : '') . 'required|string|max:50',
-                'cover_image' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg|max:2048',
+                'class_code' => ($isUpdate ? 'sometimes|' : '') . 'required|string|max:50|unique:classes,class_code' . ($isUpdate ? ',' . ($data['id'] ?? 'NULL') : ''),
+                'cover_image' => 'nullable|file|mimetypes:image/jpeg,image/png,image/jpg|max:10240',
                 'is_active' => 'boolean',
             ],
             [
                 'name.required' => 'Class name is required',
                 'name.string' => 'Class name must be a string',
                 'description.string' => 'Description must be a string',
-                'cover_image.mimetypes' => 'Cover image must be a JPEG, PNG, or JPG image',
-                'cover_image.max' => 'Cover image size must be at most 2MB',
+                'cover_image.mimetypes' => 'Cover image must be a JPEG or PNG image',
+                'cover_image.max' => 'Cover image size must be at most 10MB',
                 'class_code.required' => 'Class code is required',
             ]
         );

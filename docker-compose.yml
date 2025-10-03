@@ -14,7 +14,7 @@ services:
             - APP_ENV=production
             - APP_DEBUG=false
             - DB_HOST=mysql
-            - DB_DATABASE=koupii_api
+            - DB_DATABASE=koupii_production
             - DB_USERNAME=koupii_user
             - DB_PASSWORD=${DB_PASSWORD}
         depends_on:
@@ -31,7 +31,7 @@ services:
         container_name: koupii-mysql
         restart: unless-stopped
         environment:
-            - MYSQL_DATABASE=koupii_api
+            - MYSQL_DATABASE=koupii_production
             - MYSQL_USER=koupii_user
             - DB_PASSWORD=${DB_PASSWORD}
             - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}

@@ -62,7 +62,14 @@ jobs:
 
       - name: Health check API
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }} 'curl -fsS https://api-koupii.magercoding.com/api/profile || curl -fsS https://api-koupii.magercoding.com/ > /dev/null'
+          ssh -o StrictHostKeyChecking=no root@${{ secrets.VPS_HOST }} '
+            # Check API endpoint with proper JSON header (expect 401 for unauthenticated)
+            curl -fsS -H "Accept: application/json" https://api-koupii.magercoding.com/api/profile -w "HTTP_CODE:%{http_code}" | grep -E "(HTTP_CODE:401|HTTP_CODE:200)" || {
+              echo "API health check failed"
+              exit 1
+            }
+            echo "API health check passed"
+          '
 
       - name: Print active backend image and env DB
         run: |

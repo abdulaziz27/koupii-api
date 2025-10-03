@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
  * @property string $class_code
  * @property string $cover_image
  * @property string $is_active
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class Classes extends Model
 {
@@ -39,6 +42,16 @@ class Classes extends Model
     public function teacher()
     {
         return $this->belongsTo(User::class, 'teacher_id');
+    }
+
+    public function students()
+    {
+        return $this->belongsToMany(
+            User::class,
+            'class_enrollments',
+            'class_id',
+            'student_id'
+        )->withPivot('status', 'enrolled_at')->withTimestamps();
     }
 
     public function enrollments()

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Classes;
-use App\Models\ClassEnrollment;
 use App\Helpers\ValidationHelper;
 use App\Helpers\FileUploadHelper;
 use Illuminate\Support\Str;
@@ -18,46 +17,39 @@ class ClassController extends Controller
      *     tags={"Classes"},
      *     summary="Get all classes",
      *     description="Admin & Student can see all classes, Teacher can only see their own classes.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Frontend URL for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     security={{"bearerAuth":{}}},
      *     @OA\Response(
      *         response=200,
      *         description="List of classes",
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(
-     *                 @OA\Property(property="id", type="string", format="uuid", example="20d7c432-467b-433a-b035-b43481b5ee85"),
-     *                 @OA\Property(property="teacher_id", type="string", format="uuid", example="598d528e-c734-456e-b77c-7abee4cf92fa"),
-     *                 @OA\Property(property="name", type="string", example="Theorytical Class"),
-     *                 @OA\Property(property="description", type="string", example="This is theory class"),
-     *                 @OA\Property(property="class_code", type="string", example="lkoiun"),
-     *                 @OA\Property(property="cover_image", type="string", example="cover.jpg"),
-     *                 @OA\Property(property="is_active", type="boolean", example=false),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-07-17T07:10:46.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-07-17T07:10:46.000000Z"),
+     *                 @OA\Property(property="id", type="string", format="uuid", example="0199800b-be72-71ed-91bc-118cbfdadc22"),
+     *                 @OA\Property(property="name", type="string", example="Biology Class"),
+     *                 @OA\Property(property="description", type="string", example="This is class biology"),
+     *                 @OA\Property(property="cover_image", type="string", nullable=true, example=null),
+     *                 @OA\Property(property="is_active", type="boolean", example=true),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-09-25T08:44:37.000000Z"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-09-29T07:35:08.000000Z"),
      *                 @OA\Property(
      *                     property="teacher",
      *                     type="object",
-     *                     @OA\Property(property="id", type="string", format="uuid", example="598d528e-c734-456e-b77c-7abee4cf92fa"),
-     *                     @OA\Property(property="name", type="string", example="Teacher User 1"),
+     *                     @OA\Property(property="id", type="string", format="uuid", example="240726c6-64b3-4cbb-ae47-923dc2b46d37"),
+     *                     @OA\Property(property="name", type="string", example="Fika Teacher"),
      *                     @OA\Property(property="email", type="string", example="teacher1@example.com"),
-     *                     @OA\Property(property="role", type="string", example="teacher"),
-     *                     @OA\Property(property="avatar", type="string", nullable=true, example=null),
-     *                     @OA\Property(property="bio", type="string", example="Teacher account 1")
-     *                 )
+     *                     @OA\Property(property="bio", type="string", example="Lorem ipsum dolor sit amet"),
+     *                     @OA\Property(property="avatar", type="string", nullable=true, example="http://localhost:8000/storage/avatar/68d3bb777d57b.png")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="students",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         @OA\Property(property="id", type="string", format="uuid", example="e76ed3e1-f9ea-45b4-84a3-275fa0c24715"),
+     *                         @OA\Property(property="name", type="string", example="Fita"),
+     *                         @OA\Property(property="avatar", type="string", nullable=true, example="http://localhost:8000/storage/avatar/68d50da003002.png")
+     *                     )
+     *                 ),
+     *                 @OA\Property(property="class_code", type="string", example="1234567")
      *             )
      *         )
      *     ),
@@ -69,19 +61,25 @@ class ClassController extends Controller
         $user = auth()->user();
 
         $classes = match ($user->role) {
-            'admin', => Classes::with(['teacher' => function ($query) {
-                $query->select('id', 'name', 'email', 'avatar', 'bio');
-            }])->get(),
+            'admin' => Classes::with([
+                'teacher:id,name,email,avatar,bio',
+                'students:id,name,email,avatar'
+            ])->get(),
 
             'teacher' => Classes::where('teacher_id', $user->id)
                 ->with([
-                    'teacher' => fn($q) => $q->select('id', 'name', 'email', 'avatar', 'bio')
+                    'teacher:id,name,email,avatar,bio',
+                    'students:id,name,email,avatar'
+                ])->get(),
+
+            'student' => Classes::whereHas('students', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })
+                ->with([
+                    'teacher:id,name,email,avatar,bio',
+                    'students:id,name,email,avatar',
                 ])
                 ->get(),
-
-            'student', => Classes::with(['teacher' => function ($query) {
-                $query->select('id', 'name', 'email', 'avatar', 'bio');
-            }])->select('id', 'teacher_id', 'name', 'description', 'cover_image', 'is_active', 'created_at', 'updated_at')->get(),
 
             default => null,
         };
@@ -89,6 +87,38 @@ class ClassController extends Controller
         if (is_null($classes)) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
+
+        $classes = $classes->map(function ($class) use ($user) {
+            $base = [
+                'id'          => $class->id,
+                'name'        => $class->name,
+                'description' => $class->description,
+                'cover_image' => $class->cover_image ? url($class->cover_image) : null,
+                'is_active'   => $class->is_active,
+                'created_at'  => $class->created_at,
+                'updated_at'  => $class->updated_at,
+                'teacher'     => $class->teacher ? [
+                    'id'     => $class->teacher->id,
+                    'name'   => $class->teacher->name,
+                    'email'  => $class->teacher->email,
+                    'bio'    => $class->teacher->bio,
+                    'avatar' => $class->teacher->avatar ? url($class->teacher->avatar) : null,
+                ] : null,
+                'students' => $class->students->map(function ($student) {
+                    return [
+                        'id'         => $student->id,
+                        'name'       => $student->name,
+                        'avatar'     => $student->avatar ? url($student->avatar) : null,
+                    ];
+                }),
+            ];
+
+            if (in_array($user->role, ['admin', 'teacher'])) {
+                $base['class_code'] = $class->class_code;
+            }
+
+            return $base;
+        });
 
         return response()->json($classes, 200);
     }
@@ -99,21 +129,7 @@ class ClassController extends Controller
      *     tags={"Classes"},
      *     summary="Create a new class",
      *     description="Only admin and teacher can create a new class.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Frontend URL for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     security={{"bearerAuth":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -132,22 +148,10 @@ class ClassController extends Controller
      *         response=201,
      *         description="Class created successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Class created successfully"),
-     *             @OA\Property(property="data",
-     *                 type="object",
-     *                 @OA\Property(property="id", type="string", format="uuid", example="7c8461cf-45d7-4ce3-b2c3-dfd3760783be"),
-     *                 @OA\Property(property="teacher_id", type="string", format="uuid", example="598d528e-c734-456e-b77c-7abee4cf92fa"),
-     *                 @OA\Property(property="name", type="string", example="Arabic Class"),
-     *                 @OA\Property(property="description", type="string", example="This is arabic class"),
-     *                 @OA\Property(property="class_code", type="string", example="123456"),
-     *                 @OA\Property(property="cover_image", type="string", nullable=true, example="cover.jpg"),
-     *                 @OA\Property(property="is_active", type="boolean", example=true),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-07-17T08:44:38.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-07-17T08:44:38.000000Z")
-     *             )
+     *             @OA\Property(property="message", type="string", example="Class created successfully")
      *         )
      *     ),
-     *     @OA\Response(response=409, description="Class name already exists"),
+     *     @OA\Response(response=409, description="Class name or code already exists"),
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
@@ -168,6 +172,13 @@ class ClassController extends Controller
                 return response()->json(['message' => 'Class name already exists'], 409);
             }
 
+            $existingClassCode = Classes::where('class_code', $request->input('class_code'))
+                ->where('teacher_id', auth()->user()['id']);
+
+            if ($existingClassCode->exists()) {
+                return response()->json(['message' => 'Class code already exists'], 409);
+            }
+
             $data = $validator->validated();
 
             if ($request->hasFile('cover_image')) {
@@ -184,7 +195,7 @@ class ClassController extends Controller
             ]);
 
             DB::commit();
-            return response()->json(['message' => 'Class created successfully', 'data' => $class], 201);
+            return response()->json(['message' => 'Class created successfully'], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
@@ -197,21 +208,7 @@ class ClassController extends Controller
      *     tags={"Classes"},
      *     summary="Get class details",
      *     description="Get class detail including teacher info.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Frontend URL for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -223,24 +220,32 @@ class ClassController extends Controller
      *         response=200,
      *         description="Class details",
      *         @OA\JsonContent(
-     *             @OA\Property(property="id", type="string", format="uuid", example="3d565341-2760-4454-bb36-a89cb2ead1a9"),
-     *             @OA\Property(property="teacher_id", type="string", format="uuid", example="571bd78d-4879-44e0-9697-05b6e8bebc5d"),
+     *             @OA\Property(property="id", type="string", format="uuid", example="0199800b-be72-71ed-91bc-118cbfdadc22"),
      *             @OA\Property(property="name", type="string", example="Biology Class"),
-     *             @OA\Property(property="description", type="string", example="This is biology class"),
-     *             @OA\Property(property="class_code", type="string", example="zxdfrt"),
-     *             @OA\Property(property="cover_image", type="string", example="cover.jpg"),
+     *             @OA\Property(property="description", type="string", example="This is class biology"),
+     *             @OA\Property(property="cover_image", type="string", nullable=true, example=null),
      *             @OA\Property(property="is_active", type="boolean", example=true),
-     *             @OA\Property(property="created_at", type="string", format="date-time", example="2025-07-17T07:32:50.000000Z"),
-     *             @OA\Property(property="updated_at", type="string", format="date-time", example="2025-07-17T07:32:50.000000Z"),
+     *             @OA\Property(property="created_at", type="string", format="date-time", example="2025-09-25T08:44:37.000000Z"),
+     *             @OA\Property(property="updated_at", type="string", format="date-time", example="2025-09-29T07:35:08.000000Z"),
      *             @OA\Property(
      *                 property="teacher",
      *                 type="object",
-     *                 @OA\Property(property="id", type="string", format="uuid", example="571bd78d-4879-44e0-9697-05b6e8bebc5d"),
-     *                 @OA\Property(property="name", type="string", example="Teacher User 2"),
-     *                 @OA\Property(property="email", type="string", example="teacher2@example.com"),
-     *                 @OA\Property(property="avatar", type="string", nullable=true, example=null),
-     *                 @OA\Property(property="bio", type="string", example="Teacher account 2")
-     *             )
+     *                 @OA\Property(property="id", type="string", format="uuid", example="240726c6-64b3-4cbb-ae47-923dc2b46d37"),
+     *                 @OA\Property(property="name", type="string", example="Fika Teacher"),
+     *                 @OA\Property(property="email", type="string", example="teacher1@example.com"),
+     *                 @OA\Property(property="bio", type="string", example="Lorem ipsum dolor sit amet"),
+     *                 @OA\Property(property="avatar", type="string", nullable=true, example="http://localhost:8000/storage/avatar/68d3bb777d57b.png")
+     *             ),
+     *             @OA\Property(
+     *                 property="students",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id", type="string", format="uuid", example="e76ed3e1-f9ea-45b4-84a3-275fa0c24715"),
+     *                     @OA\Property(property="name", type="string", example="Fita"),
+     *                     @OA\Property(property="avatar", type="string", nullable=true, example="http://localhost:8000/storage/avatar/68d50da003002.png")
+     *                 )
+     *             ),
+     *             @OA\Property(property="class_code", type="string", example="1234567")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Class not found")
@@ -250,32 +255,66 @@ class ClassController extends Controller
     {
         $user = auth()->user();
 
-        $classes = match ($user->role) {
-            'admin', => Classes::with(['teacher' => function ($query) {
-                $query->select('id', 'name', 'email', 'avatar', 'bio');
-            }])->get(),
+        $class = match ($user->role) {
+            'admin' => Classes::with([
+                'teacher:id,name,email,avatar,bio',
+                'students:id,name,email,avatar',
+            ])->find($id),
 
             'teacher' => Classes::where('teacher_id', $user->id)
                 ->with([
-                    'teacher' => fn($q) => $q->select('id', 'name', 'email', 'avatar', 'bio')
+                    'teacher:id,name,email,avatar,bio',
+                    'students:id,name,email,avatar',
                 ])
-                ->get(),
+                ->find($id),
 
-            'student', => Classes::with(['teacher' => function ($query) {
-                $query->select('id', 'name', 'email', 'avatar', 'bio');
-            }])->select('id', 'teacher_id', 'name', 'description', 'cover_image', 'is_active', 'created_at', 'updated_at')->get(),
-
+            'student' => Classes::whereHas('students', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })
+                ->with([
+                    'teacher:id,name,email,avatar,bio',
+                    'students:id,name,email,avatar',
+                ])
+                ->find($id),
 
             default => null,
         };
 
-        $class = $classes->where('id', $id)->first();
-
         if (!$class) {
             return response()->json(['message' => 'Class not found'], 404);
         }
-        return response()->json($class, 200);
+
+        $data = [
+            'id'          => $class->id,
+            'name'        => $class->name,
+            'description' => $class->description,
+            'cover_image' => $class->cover_image ? url($class->cover_image) : null,
+            'is_active'   => $class->is_active,
+            'created_at'  => $class->created_at,
+            'updated_at'  => $class->updated_at,
+            'teacher'     => $class->teacher ? [
+                'id'     => $class->teacher->id,
+                'name'   => $class->teacher->name,
+                'email'  => $class->teacher->email,
+                'bio'    => $class->teacher->bio,
+                'avatar' => $class->teacher->avatar ? url($class->teacher->avatar) : null,
+            ] : null,
+            'students' => $class->students->map(function ($student) {
+                return [
+                    'id'          => $student->id,
+                    'name'        => $student->name,
+                    'avatar'      => $student->avatar ? url($student->avatar) : null,
+                ];
+            }),
+        ];
+
+        if (in_array($user->role, ['admin', 'teacher'])) {
+            $data['class_code'] = $class->class_code;
+        }
+
+        return response()->json($data, 200);
     }
+
 
     /**
      * @OA\Post(
@@ -283,21 +322,7 @@ class ClassController extends Controller
      *     tags={"Classes"},
      *     summary="Update class",
      *     description="Only admin and teacher (class owner) can update class data.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Frontend URL for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -330,22 +355,12 @@ class ClassController extends Controller
      *         response=200,
      *         description="Class updated successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Class updated successfully"),
-     *             @OA\Property(property="data",
-     *                 type="object",
-     *                 @OA\Property(property="id", type="string", example="20d7c432-467b-433a-b035-b43481b5ee85"),
-     *                 @OA\Property(property="teacher_id", type="string", example="598d528e-c734-456e-b77c-7abee4cf92fa"),
-     *                 @OA\Property(property="name", type="string", example="Biology Class"),
-     *                 @OA\Property(property="description", type="string", example="This is biology class"),
-     *                 @OA\Property(property="class_code", type="string", example="qwertyui"),
-     *                 @OA\Property(property="cover_image", type="string", example="cover.jpg"),
-     *                 @OA\Property(property="is_active", type="boolean", example=true),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-07-17T07:10:46.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-07-17T08:00:00.000000Z")
-     *             )
+     *             @OA\Property(property="message", type="string", example="Class updated successfully")
      *         )
      *     ),
      *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Class not found"),
+     *     @OA\Response(response=409, description="Class name or code already exists"),
      *     @OA\Response(response=422, description="Validation error")
      * )
      */
@@ -364,8 +379,31 @@ class ClassController extends Controller
         DB::beginTransaction();
         try {
             $validator = ValidationHelper::class($request->all(), true);
+
             if ($validator->fails()) {
                 return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            if ($request->filled('name')) {
+                $existingClass = Classes::where('name', $request->input('name'))
+                    ->where('teacher_id', auth()->id())
+                    ->where('id', '!=', $id)
+                    ->first();
+
+                if ($existingClass) {
+                    return response()->json(['message' => 'Class name already exists'], 409);
+                }
+            }
+
+            if ($request->filled('class_code')) {
+                $existingClassCode = Classes::where('class_code', $request->input('class_code'))
+                    ->where('teacher_id', auth()->id())
+                    ->where('id', '!=', $id)
+                    ->first();
+
+                if ($existingClassCode) {
+                    return response()->json(['message' => 'Class code already exists'], 409);
+                }
             }
 
             $data = $validator->validated();
@@ -381,7 +419,7 @@ class ClassController extends Controller
             $class->update($data);
 
             DB::commit();
-            return response()->json(['message' => 'Class updated successfully', 'data' => $class], 200);
+            return response()->json(['message' => 'Class updated successfully'], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Server error', 'error' => $e->getMessage()], 500);
@@ -394,21 +432,7 @@ class ClassController extends Controller
      *     tags={"Classes"},
      *     summary="Delete a class",
      *     description="Only admin and teacher (class owner) can delete a class.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Frontend URL for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
+     *     security={{"bearerAuth":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -416,7 +440,13 @@ class ClassController extends Controller
      *         description="Class ID (UUID)",
      *         @OA\Schema(type="string", format="uuid")
      *     ),
-     *     @OA\Response(response=200, description="Class deleted successfully"),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Class deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Class deleted successfully")
+     *         )
+     *     ),
      *     @OA\Response(response=403, description="Unauthorized"),
      *     @OA\Response(response=404, description="Class not found")
      * )
@@ -439,108 +469,5 @@ class ClassController extends Controller
 
         $class->delete();
         return response()->json(['message' => 'Class deleted successfully'], 200);
-    }
-
-    /**
-     * @OA\Get(
-     *     path="/api/classes/{id}/students",
-     *     tags={"Classes"},
-     *     summary="Get class students and teacher info",
-     *     description="Retrieve class details along with enrolled students and teacher information. Only accessible if the student is enrolled or if user is not a student.",
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="X-XSRF-TOKEN",
-     *         in="header",
-     *         required=false,
-     *         description="CSRF token for session-based auth",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Parameter(
-     *         name="Referer",
-     *         in="header",
-     *         required=false,
-     *         description="Frontend URL for CSRF protection",
-     *         @OA\Schema(type="string", example="http://localhost:3000")
-     *     ),
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Class ID (UUID)",
-     *         @OA\Schema(type="string", format="uuid")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Class and student list returned successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="class", type="object",
-     *                 @OA\Property(property="id", type="string", format="uuid", example="01983cf4-231b-7001-859d-e49709f12a8d"),
-     *                 @OA\Property(property="name", type="string", example="Writing"),
-     *                 @OA\Property(property="description", type="string", example="This is class writing"),
-     *                 @OA\Property(property="teacher", type="object",
-     *                     @OA\Property(property="id", type="string", format="uuid", example="422630f5-d17a-4b88-bacd-1063e69f0e8f"),
-     *                     @OA\Property(property="name", type="string", example="Teacher User 1"),
-     *                     @OA\Property(property="email", type="string", example="teacher1@example.com"),
-     *                     @OA\Property(property="avatar", type="string", nullable=true, example="/storage/avatar/6887cfd4a9ec8.png")
-     *                 )
-     *             ),
-     *             @OA\Property(property="students", type="array",
-     *                 @OA\Items(type="object",
-     *                     @OA\Property(property="id", type="string", format="uuid", example="7429fefd-057c-4714-84e2-3c643c844089"),
-     *                     @OA\Property(property="name", type="string", example="Student User 2"),
-     *                     @OA\Property(property="email", type="string", example="student2@example.com"),
-     *                     @OA\Property(property="avatar", type="string", nullable=true, example=null)
-     *                 )
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=403,
-     *         description="Unauthorized - student not enrolled",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Unauthorized")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Class not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Class not found")
-     *         )
-     *     )
-     * )
-     */
-    public function students($id)
-    {
-        $user = auth()->user();
-
-        if ($user->role === 'student') {
-            $isEnrolled = ClassEnrollment::where([
-                ['class_id', $id],
-                ['student_id', $user->id]
-            ])->exists();
-
-            if (!$isEnrolled) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-        }
-
-        $class = Classes::with([
-            'teacher:id,name,email,avatar',
-            'enrollments.student:id,name,email,avatar'
-        ])->find($id);
-        if (!$class) {
-            return response()->json(['message' => 'Class not found'], 404);
-        }
-
-        return response()->json([
-            'class' => [
-                'id' => $class->id,
-                'name' => $class->name,
-                'description' => $class->description,
-                'teacher' => $class->teacher,
-            ],
-            'students' => $class->enrollments->pluck('student')->filter()->values()
-        ]);
     }
 }

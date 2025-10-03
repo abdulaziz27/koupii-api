@@ -251,27 +251,6 @@
                 "summary": "Get all classes",
                 "description": "Admin & Student can see all classes, Teacher can only see their own classes.",
                 "operationId": "6b25f6b03203da799fad5fdc967c1457",
-                "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Frontend URL for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "List of classes",
@@ -284,73 +263,87 @@
                                             "id": {
                                                 "type": "string",
                                                 "format": "uuid",
-                                                "example": "20d7c432-467b-433a-b035-b43481b5ee85"
-                                            },
-                                            "teacher_id": {
-                                                "type": "string",
-                                                "format": "uuid",
-                                                "example": "598d528e-c734-456e-b77c-7abee4cf92fa"
+                                                "example": "0199800b-be72-71ed-91bc-118cbfdadc22"
                                             },
                                             "name": {
                                                 "type": "string",
-                                                "example": "Theorytical Class"
+                                                "example": "Biology Class"
                                             },
                                             "description": {
                                                 "type": "string",
-                                                "example": "This is theory class"
-                                            },
-                                            "class_code": {
-                                                "type": "string",
-                                                "example": "lkoiun"
+                                                "example": "This is class biology"
                                             },
                                             "cover_image": {
                                                 "type": "string",
-                                                "example": "cover.jpg"
+                                                "example": null,
+                                                "nullable": true
                                             },
                                             "is_active": {
                                                 "type": "boolean",
-                                                "example": false
+                                                "example": true
                                             },
                                             "created_at": {
                                                 "type": "string",
                                                 "format": "date-time",
-                                                "example": "2025-07-17T07:10:46.000000Z"
+                                                "example": "2025-09-25T08:44:37.000000Z"
                                             },
                                             "updated_at": {
                                                 "type": "string",
                                                 "format": "date-time",
-                                                "example": "2025-07-17T07:10:46.000000Z"
+                                                "example": "2025-09-29T07:35:08.000000Z"
                                             },
                                             "teacher": {
                                                 "properties": {
                                                     "id": {
                                                         "type": "string",
                                                         "format": "uuid",
-                                                        "example": "598d528e-c734-456e-b77c-7abee4cf92fa"
+                                                        "example": "240726c6-64b3-4cbb-ae47-923dc2b46d37"
                                                     },
                                                     "name": {
                                                         "type": "string",
-                                                        "example": "Teacher User 1"
+                                                        "example": "Fika Teacher"
                                                     },
                                                     "email": {
                                                         "type": "string",
                                                         "example": "teacher1@example.com"
                                                     },
-                                                    "role": {
+                                                    "bio": {
                                                         "type": "string",
-                                                        "example": "teacher"
+                                                        "example": "Lorem ipsum dolor sit amet"
                                                     },
                                                     "avatar": {
                                                         "type": "string",
-                                                        "example": null,
+                                                        "example": "http://localhost:8000/storage/avatar/68d3bb777d57b.png",
                                                         "nullable": true
-                                                    },
-                                                    "bio": {
-                                                        "type": "string",
-                                                        "example": "Teacher account 1"
                                                     }
                                                 },
                                                 "type": "object"
+                                            },
+                                            "students": {
+                                                "type": "array",
+                                                "items": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "string",
+                                                            "format": "uuid",
+                                                            "example": "e76ed3e1-f9ea-45b4-84a3-275fa0c24715"
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "example": "Fita"
+                                                        },
+                                                        "avatar": {
+                                                            "type": "string",
+                                                            "example": "http://localhost:8000/storage/avatar/68d50da003002.png",
+                                                            "nullable": true
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "class_code": {
+                                                "type": "string",
+                                                "example": "1234567"
                                             }
                                         },
                                         "type": "object"
@@ -365,7 +358,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -378,27 +371,6 @@
                 "summary": "Create a new class",
                 "description": "Only admin and teacher can create a new class.",
                 "operationId": "b84bd7a37320a26c569ba548ef4fb038",
-                "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Frontend URL for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    }
-                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -445,52 +417,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Class created successfully"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "format": "uuid",
-                                                    "example": "7c8461cf-45d7-4ce3-b2c3-dfd3760783be"
-                                                },
-                                                "teacher_id": {
-                                                    "type": "string",
-                                                    "format": "uuid",
-                                                    "example": "598d528e-c734-456e-b77c-7abee4cf92fa"
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "Arabic Class"
-                                                },
-                                                "description": {
-                                                    "type": "string",
-                                                    "example": "This is arabic class"
-                                                },
-                                                "class_code": {
-                                                    "type": "string",
-                                                    "example": "123456"
-                                                },
-                                                "cover_image": {
-                                                    "type": "string",
-                                                    "example": "cover.jpg",
-                                                    "nullable": true
-                                                },
-                                                "is_active": {
-                                                    "type": "boolean",
-                                                    "example": true
-                                                },
-                                                "created_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-07-17T08:44:38.000000Z"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-07-17T08:44:38.000000Z"
-                                                }
-                                            },
-                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -499,7 +425,7 @@
                         }
                     },
                     "409": {
-                        "description": "Class name already exists"
+                        "description": "Class name or code already exists"
                     },
                     "422": {
                         "description": "Validation error"
@@ -507,7 +433,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -521,25 +447,6 @@
                 "description": "Get class detail including teacher info.",
                 "operationId": "f274e72a26ce40eebdfb152c600497b7",
                 "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Frontend URL for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -561,12 +468,7 @@
                                         "id": {
                                             "type": "string",
                                             "format": "uuid",
-                                            "example": "3d565341-2760-4454-bb36-a89cb2ead1a9"
-                                        },
-                                        "teacher_id": {
-                                            "type": "string",
-                                            "format": "uuid",
-                                            "example": "571bd78d-4879-44e0-9697-05b6e8bebc5d"
+                                            "example": "0199800b-be72-71ed-91bc-118cbfdadc22"
                                         },
                                         "name": {
                                             "type": "string",
@@ -574,15 +476,12 @@
                                         },
                                         "description": {
                                             "type": "string",
-                                            "example": "This is biology class"
-                                        },
-                                        "class_code": {
-                                            "type": "string",
-                                            "example": "zxdfrt"
+                                            "example": "This is class biology"
                                         },
                                         "cover_image": {
                                             "type": "string",
-                                            "example": "cover.jpg"
+                                            "example": null,
+                                            "nullable": true
                                         },
                                         "is_active": {
                                             "type": "boolean",
@@ -591,39 +490,65 @@
                                         "created_at": {
                                             "type": "string",
                                             "format": "date-time",
-                                            "example": "2025-07-17T07:32:50.000000Z"
+                                            "example": "2025-09-25T08:44:37.000000Z"
                                         },
                                         "updated_at": {
                                             "type": "string",
                                             "format": "date-time",
-                                            "example": "2025-07-17T07:32:50.000000Z"
+                                            "example": "2025-09-29T07:35:08.000000Z"
                                         },
                                         "teacher": {
                                             "properties": {
                                                 "id": {
                                                     "type": "string",
                                                     "format": "uuid",
-                                                    "example": "571bd78d-4879-44e0-9697-05b6e8bebc5d"
+                                                    "example": "240726c6-64b3-4cbb-ae47-923dc2b46d37"
                                                 },
                                                 "name": {
                                                     "type": "string",
-                                                    "example": "Teacher User 2"
+                                                    "example": "Fika Teacher"
                                                 },
                                                 "email": {
                                                     "type": "string",
-                                                    "example": "teacher2@example.com"
-                                                },
-                                                "avatar": {
-                                                    "type": "string",
-                                                    "example": null,
-                                                    "nullable": true
+                                                    "example": "teacher1@example.com"
                                                 },
                                                 "bio": {
                                                     "type": "string",
-                                                    "example": "Teacher account 2"
+                                                    "example": "Lorem ipsum dolor sit amet"
+                                                },
+                                                "avatar": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/storage/avatar/68d3bb777d57b.png",
+                                                    "nullable": true
                                                 }
                                             },
                                             "type": "object"
+                                        },
+                                        "students": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "format": "uuid",
+                                                        "example": "e76ed3e1-f9ea-45b4-84a3-275fa0c24715"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Fita"
+                                                    },
+                                                    "avatar": {
+                                                        "type": "string",
+                                                        "example": "http://localhost:8000/storage/avatar/68d50da003002.png",
+                                                        "nullable": true
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "class_code": {
+                                            "type": "string",
+                                            "example": "1234567"
                                         }
                                     },
                                     "type": "object"
@@ -637,7 +562,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -651,25 +576,6 @@
                 "description": "Only admin and teacher (class owner) can update class data.",
                 "operationId": "0a140a97c3df1a97502a6d8c6f4b1592",
                 "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Frontend URL for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -737,49 +643,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Class updated successfully"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "example": "20d7c432-467b-433a-b035-b43481b5ee85"
-                                                },
-                                                "teacher_id": {
-                                                    "type": "string",
-                                                    "example": "598d528e-c734-456e-b77c-7abee4cf92fa"
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "Biology Class"
-                                                },
-                                                "description": {
-                                                    "type": "string",
-                                                    "example": "This is biology class"
-                                                },
-                                                "class_code": {
-                                                    "type": "string",
-                                                    "example": "qwertyui"
-                                                },
-                                                "cover_image": {
-                                                    "type": "string",
-                                                    "example": "cover.jpg"
-                                                },
-                                                "is_active": {
-                                                    "type": "boolean",
-                                                    "example": true
-                                                },
-                                                "created_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-07-17T07:10:46.000000Z"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-07-17T08:00:00.000000Z"
-                                                }
-                                            },
-                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -790,13 +653,19 @@
                     "403": {
                         "description": "Unauthorized"
                     },
+                    "404": {
+                        "description": "Class not found"
+                    },
+                    "409": {
+                        "description": "Class name or code already exists"
+                    },
                     "422": {
                         "description": "Validation error"
                     }
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -811,25 +680,6 @@
                 "operationId": "b97ca6c1832c317ea82ce5717abd9ce1",
                 "parameters": [
                     {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Frontend URL for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    },
-                    {
                         "name": "id",
                         "in": "path",
                         "description": "Class ID (UUID)",
@@ -842,7 +692,20 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "Class deleted successfully"
+                        "description": "Class deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Class deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "403": {
                         "description": "Unauthorized"
@@ -853,166 +716,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
-                    }
-                ]
-            }
-        },
-        "/api/classes/{id}/students": {
-            "get": {
-                "tags": [
-                    "Classes"
-                ],
-                "summary": "Get class students and teacher info",
-                "description": "Retrieve class details along with enrolled students and teacher information. Only accessible if the student is enrolled or if user is not a student.",
-                "operationId": "1363b40c9c785ae9db3f3eab355713f0",
-                "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Frontend URL for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    },
-                    {
-                        "name": "id",
-                        "in": "path",
-                        "description": "Class ID (UUID)",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Class and student list returned successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "class": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "format": "uuid",
-                                                    "example": "01983cf4-231b-7001-859d-e49709f12a8d"
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "Writing"
-                                                },
-                                                "description": {
-                                                    "type": "string",
-                                                    "example": "This is class writing"
-                                                },
-                                                "teacher": {
-                                                    "properties": {
-                                                        "id": {
-                                                            "type": "string",
-                                                            "format": "uuid",
-                                                            "example": "422630f5-d17a-4b88-bacd-1063e69f0e8f"
-                                                        },
-                                                        "name": {
-                                                            "type": "string",
-                                                            "example": "Teacher User 1"
-                                                        },
-                                                        "email": {
-                                                            "type": "string",
-                                                            "example": "teacher1@example.com"
-                                                        },
-                                                        "avatar": {
-                                                            "type": "string",
-                                                            "example": "/storage/avatar/6887cfd4a9ec8.png",
-                                                            "nullable": true
-                                                        }
-                                                    },
-                                                    "type": "object"
-                                                }
-                                            },
-                                            "type": "object"
-                                        },
-                                        "students": {
-                                            "type": "array",
-                                            "items": {
-                                                "properties": {
-                                                    "id": {
-                                                        "type": "string",
-                                                        "format": "uuid",
-                                                        "example": "7429fefd-057c-4714-84e2-3c643c844089"
-                                                    },
-                                                    "name": {
-                                                        "type": "string",
-                                                        "example": "Student User 2"
-                                                    },
-                                                    "email": {
-                                                        "type": "string",
-                                                        "example": "student2@example.com"
-                                                    },
-                                                    "avatar": {
-                                                        "type": "string",
-                                                        "example": null,
-                                                        "nullable": true
-                                                    }
-                                                },
-                                                "type": "object"
-                                            }
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Unauthorized - student not enrolled",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "error": {
-                                            "type": "string",
-                                            "example": "Unauthorized"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Class not found",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Class not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -2143,6 +1847,80 @@
                 ]
             }
         },
+        "/api/profile": {
+            "get": {
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get current user profile",
+                "description": "Retrieve profile information for the authenticated user.",
+                "operationId": "4373251f8140344279ac32a1ac817cef",
+                "responses": {
+                    "200": {
+                        "description": "Current user profile data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "string",
+                                            "format": "uuid",
+                                            "example": "d2fb93ec-6043-4384-814d-0e48f36aed50"
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Fika"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "student2@example.com"
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "example": "student"
+                                        },
+                                        "avatar": {
+                                            "type": "string",
+                                            "example": "https://api-koupii.magercoding.com/storage/avatar/6887cfd4a9ec8.png",
+                                            "nullable": true
+                                        },
+                                        "bio": {
+                                            "type": "string",
+                                            "example": "Student from Informatics"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/profile/{id}": {
             "get": {
                 "tags": [
@@ -2152,25 +1930,6 @@
                 "description": "Retrieve public details of a user by their ID.",
                 "operationId": "dc381917fc0ff732960235c596a202d1",
                 "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth (Sanctum)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Referring URL Frontend for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    },
                     {
                         "name": "id",
                         "in": "path",
@@ -2191,20 +1950,24 @@
                                     "properties": {
                                         "name": {
                                             "type": "string",
-                                            "example": "Fika"
+                                            "example": "Teacher 1"
                                         },
                                         "email": {
                                             "type": "string",
-                                            "example": "student2@example.com"
+                                            "example": "teacher1@example.com"
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "example": "teacher"
                                         },
                                         "avatar": {
                                             "type": "string",
-                                            "example": "/storage/avatar/6887cfd4a9ec8.png",
+                                            "example": "http://localhost:8000/storage/avatar/68da7f36cac36.JPG",
                                             "nullable": true
                                         },
                                         "bio": {
                                             "type": "string",
-                                            "example": "Student from Informatics"
+                                            "example": "Lorem ipsum dolor sit amet"
                                         }
                                     },
                                     "type": "object"
@@ -2231,7 +1994,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -2245,25 +2008,6 @@
                 "description": "Update authenticated user's profile including name, email, role, avatar, and bio.",
                 "operationId": "7c0bd54ef563ec1c42a6e9dd59871113",
                 "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth (Sanctum)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Referring URL Frontend for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    },
                     {
                         "name": "_method",
                         "in": "query",
@@ -2329,50 +2073,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "User updated successfully"
-                                        },
-                                        "data": {
-                                            "properties": {
-                                                "id": {
-                                                    "type": "string",
-                                                    "example": "d2fb93ec-6043-4384-814d-0e48f36aed50"
-                                                },
-                                                "name": {
-                                                    "type": "string",
-                                                    "example": "Fika"
-                                                },
-                                                "email": {
-                                                    "type": "string",
-                                                    "example": "student2@example.com"
-                                                },
-                                                "email_verified_at": {
-                                                    "type": "string",
-                                                    "example": null,
-                                                    "nullable": true
-                                                },
-                                                "role": {
-                                                    "type": "string",
-                                                    "example": "student"
-                                                },
-                                                "avatar": {
-                                                    "type": "string",
-                                                    "example": "/storage/avatar/687f8636256b0.png"
-                                                },
-                                                "bio": {
-                                                    "type": "string",
-                                                    "example": "Lorem ipsum dolor sit amet"
-                                                },
-                                                "created_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-07-17T07:08:54.000000Z"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string",
-                                                    "format": "date-time",
-                                                    "example": "2025-07-22T12:38:14.000000Z"
-                                                }
-                                            },
-                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -2404,7 +2104,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
@@ -2417,27 +2117,6 @@
                 "summary": "Delete user profile",
                 "description": "Delete the authenticated user's account, including avatar file if present.",
                 "operationId": "25bd5807c8c305b9fe8f3dc9ccbd04b9",
-                "parameters": [
-                    {
-                        "name": "X-XSRF-TOKEN",
-                        "in": "header",
-                        "description": "CSRF token for session-based auth (Sanctum)",
-                        "required": false,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "name": "Referer",
-                        "in": "header",
-                        "description": "Referring URL Frontend for CSRF protection",
-                        "required": false,
-                        "schema": {
-                            "type": "string",
-                            "example": "http://localhost:3000"
-                        }
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "User deleted successfully",
@@ -2459,7 +2138,20 @@
                         "description": "Unauthenticated"
                     },
                     "404": {
-                        "description": "User not found"
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "500": {
                         "description": "Server error"
@@ -2467,7 +2159,7 @@
                 },
                 "security": [
                     {
-                        "sanctum": []
+                        "bearerAuth": []
                     }
                 ]
             }
